@@ -1,0 +1,6 @@
+.DS_Store
+.ipynb*/
+ltxpng/
+*.out
+*.pyc
+parsetab.py

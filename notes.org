@@ -1,0 +1,40 @@
+* python multiprocessing consensus library
+should be able to run in serial and in parallel, for debugging/sanity
+purposes. do simple consensus, and general consensus.
+
+we want to send general messages up to the collecting process. such as local
+computation of things that will go into the dual variable calculations
+
+we also want to send general messages down to the processor, such as telling
+them to reset their dual variables to zero, if we detect ripples in
+the collecting process
+
+* simple consensus
+We have a program
+\[
+\min\sum_{i=1}^n f_i(x_i) s.t. x_i = z \forall i
+\]
+
+the iteration becomes
+
+\begin{align*}
+x_i^{k+1} = \mbox{prox}_{f_i/\rho}\left( \bar{x}^k - u_i^k \right) \\
+u_i^{k+1} = u_i^k + x_i^{k+1} - \bar{x}^{k+1}
+\end{align*}
+
+but we can reformualte it into something more computationally friendly
+buy manipulating the indexing time:
+
+\begin{align*}
+u_i^{k+1} &= u_i^k + x_i^{k} - \bar{x}^{k}\\
+x_i^{k+1} &= \mbox{prox}_{f_i/\rho}\left( \bar{x}^k - u_i^{k+1} \right)
+\end{align*}
+
+Computationally, we see that each node maintains a state of
+$(x_i^k,u_i^k)$. The steps are as follows
+1. $\bar{x}^k$ is sent to each node
+2. each node updates $u_i^{k+1}$ locally
+3. each node computes the prox locally to produce $x_i^{k+1}$
+4. each node sends out $x_i^{k+1}$
+5. $\bar{x}^{k+1}$ is computed somehow
+6. repeat

@@ -1,8 +1,8 @@
 currently a mess, but run
 
-'''python
+```python
 python qcml_prox.py
-'''
+```
 
 to see a simple example split across two processors.
 

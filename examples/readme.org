@@ -1,0 +1,3 @@
+* purpose
+move example scripts here, once I get an installer working.
+in the meantime, example scripts will be in the parent directory.

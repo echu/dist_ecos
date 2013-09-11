@@ -9,6 +9,9 @@ we also want to send general messages down to the processor, such as telling
 them to reset their dual variables to zero, if we detect ripples in
 the collecting process
 
+* partitioning
+http://www.staff.science.uu.nl/~bisse101/Mondriaan/
+
 * problem form
 ** primal
 \begin{align*}
@@ -22,7 +25,6 @@ the collecting process
 \mbox{subject to}\ & A^T w + G^T z = -c \\
 & z \in K^*
 \end{align*}
-
 
 * simple consensus
 We have a program

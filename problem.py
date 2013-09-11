@@ -102,43 +102,6 @@ def shuffle_rows(A, b):
     return A, b
 
 
-class GlobalProblem(object):
-    def __init__(self):
-        m = 10
-        n = 20
-        A = np.random.randn(m, n)
-        b = np.random.randn(m)
-
-        q = QCML()
-        self.q = q
-        q.parse('''
-        dimensions m n
-        variable x(n)
-        parameters A(m,n) b(m)
-        minimize norm1(x)
-        A*x == b
-        ''')
-        q.canonicalize()
-        q.dims = {'m': m, 'n': n}
-        q.codegen('python')
-
-        self.socp_vars = q.prob2socp(locals())
-
-        #convert to CSR for fast row slicing to distribute problem
-        self.socp_vars['A'] = self.socp_vars['A'].tocsr()
-        self.socp_vars['G'] = self.socp_vars['G'].tocsr()
-
-        #the size of the stuffed x or v
-        self.n = self.socp_vars['A'].shape[1]
-
-        self.ecos_sol = ecos.solve(**self.socp_vars)
-
-        #solution to transformed socp (stuffed)
-        self.socp_sol = self.ecos_sol['x']
-        #solution to original problem (unstuffed)
-        self.prob_sol = q.socp2prob(self.ecos_sol['x'])['x']
-
-
 class LocalProblem(object):
     '''object to hold local data to compute prox operators of sub problems'''
     def __init__(self, local_socp_vars, rho=1):

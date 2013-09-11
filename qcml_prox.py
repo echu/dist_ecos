@@ -84,19 +84,21 @@ if __name__ == '__main__':
         rpri = 0
 
         total = np.zeros((n))
-        for i, p in enumerate(proxes):
+
+        for p in proxes:
             x, info = p.local_problem.xupdate(xbar)
+            #x = p.local_problem.optProx(xbar)
             total += x
-            rpri += info['offset']
+            #rpri += info['offset']
 
         xbar_old = xbar
         xbar = total/num_prox
 
-        rpri = np.sqrt(rpri)
+        #rpri = np.sqrt(rpri)
         rdual = np.sqrt(num_prox)*np.linalg.norm(xbar_old - xbar)
 
         diffs.append(np.linalg.norm(np.array(xbar-gp.socp_sol)))
-        rpris.append(rpri)
+        #rpris.append(rpri)
         rduals.append(rdual)
 
     #stops the proxes from running
@@ -110,5 +112,6 @@ if __name__ == '__main__':
 
     import pylab
     r = len(diffs)
-    pylab.semilogy(range(r), diffs, range(r), rpris, range(r), rduals)
+    #pylab.semilogy(range(r), diffs, range(r), rduals)
+    pylab.semilogy(range(r), diffs)
     pylab.show()

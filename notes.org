@@ -9,6 +9,21 @@ we also want to send general messages down to the processor, such as telling
 them to reset their dual variables to zero, if we detect ripples in
 the collecting process
 
+* problem form
+** primal
+\begin{align*}
+\mbox{minimize}\  &c^T x \\
+\mbox{subject to}\ & Ax = b \\
+& Gx \leq_{K} h
+\end{align*}
+** dual
+\begin{align*}
+\mbox{minimize}\  & b^T w + h^T z \\
+\mbox{subject to}\ & A^T w + G^T z = -c \\
+& z \in K^*
+\end{align*}
+
+
 * simple consensus
 We have a program
 \[
@@ -20,6 +35,14 @@ the iteration becomes
 \begin{align*}
 x_i^{k+1} = \mbox{prox}_{f_i/\rho}\left( \bar{x}^k - u_i^k \right) \\
 u_i^{k+1} = u_i^k + x_i^{k+1} - \bar{x}^{k+1}
+\end{align*}
+
+
+after an iteration, we can compute the residuals:
+
+\begin{align*}
+\| r^k \|^2_2 &= \sum_{i=1}^{N}\|x_i^k - \bar{x}^k \|_2^2\\
+\| s^k \|_2 &= \sqrt{N} \rho \| \bar{x}^k - \bar{x}^{k-1} \|_2
 \end{align*}
 
 but we can reformualte it into something more computationally friendly
@@ -38,3 +61,28 @@ $(x_i^k,u_i^k)$. The steps are as follows
 4. each node sends out $x_i^{k+1}$
 5. $\bar{x}^{k+1}$ is computed somehow
 6. repeat
+
+* restarting
+The below actually gives us *a* value of the optimal dual
+variable $u^\star$.
+
+as a good guess for a restart, we would like have each prox stay at the current
+xbar. That is, we want to find a $y$ such that
+\[
+\bar{x} = \mbox{prox}_{f_i/\rho}\left(\bar{x} - y \right)
+\]
+
+If $f_i(x) = c^T x$, then the solution is given by
+$u^\star = -\frac{1}{\rho}c$.
+
+the simple algorithm:
+\[
+x_i^{k+1} = \mbox{prox}_{f_i/\rho}\left(\bar{x}^k + \frac{c}{\rho}\right)
+\]
+should converge to the correct solution, no?
+
+NO! Adding the $\frac{c}{\rho}$ term cancels the $c$ term in the prox function,
+making the prox exactly the projection onto the convex set, without
+any consideration for the linear term. We might try to shrink towards
+the optimal value when we see ripples... we still need some of the
+dynamic $u$ updates so that we are not just solving a feasibility problem.

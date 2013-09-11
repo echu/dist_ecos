@@ -1,8 +1,8 @@
 import numpy as np
-import problem
+import dist_ecos.problems.basis_pursuit as bp
+import dist_ecos.local as local
 
-gp = problem.GlobalProblem()
-n = gp.n
+n = bp.n
 
 num_proxes = 2
 proxes = []
@@ -15,7 +15,7 @@ rpris = []
 rduals = []
 
 for i in range(num_proxes):
-    lp = problem.split_both(gp.socp_vars, num_proxes, i, rho=1)
+    lp = local.split_both(bp.socp_vars, num_proxes, i, rho=1)
     proxes.append(lp)
 
 for j in range(runs):
@@ -36,7 +36,7 @@ for j in range(runs):
     rpri = np.sqrt(rpri)
     rdual = np.sqrt(num_proxes)*np.linalg.norm(xbar_old - xbar)
 
-    diffs.append(np.linalg.norm(np.array(xbar-gp.socp_sol)))
+    diffs.append(np.linalg.norm(np.array(xbar-bp.socp_sol)))
     rpris.append(rpri)
     rduals.append(rdual)
 

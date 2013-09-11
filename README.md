@@ -1,10 +1,8 @@
-currently a mess, but run
+A little more cleaned up now. Try running:
 
 ```python
-python qcml_prox.py
+python serial_example.py
+python dual_example.py
 ```
 
-to see a simple example split across two processors.
-
-The code in qcml_prox.py is currently a mix of serial and parallel code.
-Its designed to be run either way, to make it easier to debug.
+Its designed to be run either serially or in parallel, to make it easier to debug.

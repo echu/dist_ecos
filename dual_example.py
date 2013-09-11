@@ -1,16 +1,16 @@
 import numpy as np
-import problem
+import dist_ecos.problems.basis_pursuit as bp
+import dist_ecos.local as local
 
-gp = problem.GlobalProblem()
-dual_socp_vars = problem.primal2dual(gp.socp_vars)
+dual_socp_vars = local.primal2dual(bp.socp_vars)
 n = dual_socp_vars['A'].shape[1]
 dual_socp_vars['A'], dual_socp_vars['b'] = \
-    problem.shuffle_rows(dual_socp_vars['A'], dual_socp_vars['b'])
+    local.shuffle_rows(dual_socp_vars['A'], dual_socp_vars['b'])
 
 print dual_socp_vars['A'].shape
 print n
 
-problem.show_spy(dual_socp_vars)
+local.show_spy(dual_socp_vars)
 
 num_proxes = 2
 proxes = []
@@ -23,9 +23,9 @@ rpris = []
 rduals = []
 
 for i in range(num_proxes):
-    lp = problem.split_A(dual_socp_vars, num_proxes, i, rho=1)
+    lp = local.split_A(dual_socp_vars, num_proxes, i, rho=1)
     proxes.append(lp)
-    problem.show_spy(lp.socp_vars)
+    local.show_spy(lp.socp_vars)
 
 
 for j in range(runs):

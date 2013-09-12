@@ -1,6 +1,8 @@
 import numpy as np
-import dist_ecos.problems.basis_pursuit as bp
 import dist_ecos.local as local
+
+#load the problem data
+import dist_ecos.problems.basis_pursuit as bp
 
 dual_socp_vars = local.primal2dual(bp.socp_vars)
 n = dual_socp_vars['A'].shape[1]

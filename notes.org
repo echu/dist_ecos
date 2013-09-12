@@ -26,6 +26,10 @@ http://www.staff.science.uu.nl/~bisse101/Mondriaan/
 & z \in K^*
 \end{align*}
 
+When we transform the primal output from QCML to dual form, and re-pack
+the matrices into a form that ECOS can handle, we expand the problem size, but
+that may or may not be a big issue.
+
 * simple consensus
 We have a program
 \[
@@ -88,3 +92,5 @@ making the prox exactly the projection onto the convex set, without
 any consideration for the linear term. We might try to shrink towards
 the optimal value when we see ripples... we still need some of the
 dynamic $u$ updates so that we are not just solving a feasibility problem.
+
+family code sections 2200 2201 2210

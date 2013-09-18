@@ -67,6 +67,46 @@ $(x_i^k,u_i^k)$. The steps are as follows
 4. each node sends out $x_i^{k+1}$
 5. $\bar{x}^{k+1}$ is computed somehow
 6. repeat
+* general consensus
+We describe the mapping from local variables to global with
+$G(i,j) = k$ meaning that that $j$th element of local variable $x_i$ corresponds
+to the $k$th element of the global variable.
+\begin{align*}
+u_i^{k+1} &= u_i^k + x_i^{k} - \tilde{z}_i^{k}\\
+x_i^{k+1} &= \mbox{prox}_{f_i/\rho}\left( \tilde{z}_i^k - u_i^{k+1} \right)\\
+z_g^{k+1} &= \frac{1}{k_g} \sum_{G(i,j)=g} \left(x_i^{k+1} \right)_j
+\end{align*}
+
+Computationally, we have that each node maintains a state of
+$(x_i^{k}, u_i^k)$. The steps are:
+1. $z^k$ is computed in shared memory
+2. each node pulls its $\tilde{z}_i^k$
+3. each node updates $u_i^{k+1}$
+4. each node updates $x_i^{k+1}$ by computing the prox
+5. each node sends out its $x_i^{k+1}$
+6. the $x_i^{k+1}$ are averaged appropriately to produce $z^{k+1}$
+
+The residuals are given by
+\begin{align*}
+\| r^k \|^2_2 &= \sum_{i=1}^{N}\|x_i^k - \tilde{z}_i^k \|_2^2\\
+\| s^k \|_2^2 &= \rho^2 \sum_{i=1}^N \| \tilde{z}_i^k - \tilde{z}_i^{k-1} \|_2^2
+\end{align*}
+
+* rho updates
+if $r^k$ much bigger than $s^k$, then increase $\rho$, and vice versa.
+and update $u$: $u^{k} = \frac{\rho^k}{\rho^{k+1}}u^k$
+* over/under relaxation
+
+* reordering rows
+To reorder the rows, we first store the problem in a modified format
+\begin{align*}
+\mbox{minimize}\  &c^T x \\
+\mbox{subject to}\ & Rx \leq_{K} s
+\end{align*}
+where $K$ is a product cone which includes the zero cone. This allows
+us to include the equality constraints we find in the primal form.
+
+
 
 * restarting
 The below actually gives us *a* value of the optimal dual
@@ -93,4 +133,36 @@ any consideration for the linear term. We might try to shrink towards
 the optimal value when we see ripples... we still need some of the
 dynamic $u$ updates so that we are not just solving a feasibility problem.
 
-family code sections 2200 2201 2210
+* residuals
+use direct primal, dual residuals
+
+try ecos with large prox, but few inequalities.
+
+primal and dual, do whole, do consensus. see how fast it goes.
+
+split rows of A and columsn of A^T
+
+try comparing general and simple consensus. we need a data point to show
+that doing general consensus is the right thing to do.
+
+
+* design
+
+** prox object
+the prox object should take in reduced (local) socp data
+and be able to return the prox.
+
+the constructor should take in socp_data, but this data can have
+None objects for A, G, or c
+
+- we should wrap these objects with an xupdate
+- also wrap with a global variable index
+
+this should allow us to use the same code for simple consensus,
+general consensus, and set intersection
+
+* todo
+- move the examples to the main directory
+- make a parallel example
+- compute residuals
+- make some solver objects

@@ -1,14 +1,13 @@
 """Run an example of simple consensus"""
 import numpy as np
 import split
-import local
 
 
 #'global' problem
 import problems.svc as gp
 
 print gp.socp_vars
-local.show_spy(gp.socp_vars)
+split.show_spy(gp.socp_vars)
 
 n = gp.n
 z = np.zeros((n))

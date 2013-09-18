@@ -1,14 +1,13 @@
 """Compare simple consensus vs general consensus on the same problem"""
 import numpy as np
 import split
-import local
 
 
 #'global' problem
 import problems.svc as gp
 
 print gp.socp_vars
-local.show_spy(gp.socp_vars)
+split.show_spy(gp.socp_vars)
 
 n = gp.n
 num_proxes = 10

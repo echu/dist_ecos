@@ -65,6 +65,8 @@ class Prox(object):
         #we could have user input here, but we'll default to zero for now
         self.x = np.zeros((self.n))
         self.u = np.zeros((self.n))
+        
+        self.global_index = np.arange(self.n)
 
     def prox(self, v):
         '''computes prox_{f/rho}(v)'''

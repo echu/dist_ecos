@@ -7,7 +7,7 @@ from .. import prox
 def make_GC_split(cover_func):
     """ Creates a general consensus split using the cover function in
         `cover_func`. Requires that `cover_func` implement the prototype:
-        
+
             list_of_equations, num_cols = cover_func(socp_data, num_partitions)
     """
     def split(socp_data, N):

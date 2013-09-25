@@ -1,3 +1,6 @@
+#+LATEX_CLASS: article
+#+LATEX_HEADER: \usepackage{amsmath}
+
 * python multiprocessing consensus library
 should be able to run in serial and in parallel, for debugging/sanity
 purposes. do simple consensus, and general consensus.
@@ -162,7 +165,57 @@ this should allow us to use the same code for simple consensus,
 general consensus, and set intersection
 
 * todo
-- move the examples to the main directory
-- make a parallel example
-- compute residuals
-- make some solver objects
+- add something to compute the residuals
+- add a hook for computing progress (like cross validation progress, or
+  distance to a known solution)
+- adding something to compute residuals will allow us to work with the new
+  problem form for set intersection
+- add the set intersection code
+
+* set intersection
+
+We transform a problem from the ECOS input format to a pure convex
+intersection problem by requiring primal and dual feasibility, and
+zero duality gap. We store the problem in the form $R \leq s$ where
+the type of cone inequalities (zero cone or LP cone) are described by
+a list like 'cone_array'.
+
+The resulting system is
+
+(org mode)
+| c^T | b^T | h^T | =    | 0  |
+| A   |   0 | 0   | =    | b  |
+| G   |   0 | 0   | \leq | h  |
+| 0   | A^T | G^T | =    | -c |
+| 0   |   0 | -I  | \leq | 0  |
+
+
+(latex)
+\[
+\begin{bmatrix}
+c^T & b^T & h^T \\
+A & 0 & 0 \\
+G & 0 & 0 \\
+0 & A^T & G^T \\
+0 & 0 & -I
+\end{bmatrix}
+\begin{bmatrix}
+x \\
+y_1 \\
+y_2
+\end{bmatrix}
+\begin{matrix}
+=\\
+=\\
+\leq\\
+=\\
+\leq
+\end{matrix}
+\begin{bmatrix}
+0\\
+b\\
+h\\
+-c\\
+0
+\end{bmatrix}
+\]

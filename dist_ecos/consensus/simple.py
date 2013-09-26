@@ -1,13 +1,13 @@
-import numpy as np
-
-from .. covers.helpers import R_to_socp
+from .. rformat.to_socp import R_to_socp
+from .. rformat.standard import socp_to_R
 from .. import prox
+
 
 def make_SC_split(cover_func):
     """ Creates a simple consensus split using the cover function in
         `cover_func`. Requires that `cover_func` implement the prototype:
-        
-            list_of_equations, num_cols = cover_func(socp_data, num_partitions)
+
+            list_of_equations = cover_func(R, s, cone_array, num_partitions)
     """
     def split(socp_data, N):
         """Simple consensus splitting.
@@ -17,7 +17,9 @@ def make_SC_split(cover_func):
         rho = 1
         c = socp_data['c']
 
-        R_list, n = cover_func(socp_data, N)
+        R, s, cone_array = socp_to_R(socp_data)
+
+        R_list = cover_func(R, s, cone_array, N)
         prox_list = []
 
         for R_data in R_list:
@@ -26,5 +28,5 @@ def make_SC_split(cover_func):
             p = prox.Prox(local_socp, rho)
             prox_list.append(p)
 
-        return prox_list, N
+        return prox_list
     return split

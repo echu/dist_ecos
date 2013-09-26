@@ -1,9 +1,9 @@
-import numpy as np
-
-from .. covers.helpers import R_to_reduced_socp
+from .. rformat.to_socp import R_to_reduced_socp
+from .. rformat.standard import socp_to_R
 from .. import prox
 
 
+#TODO: update general.py as we have simple.py
 def make_GC_split(cover_func):
     """ Creates a general consensus split using the cover function in
         `cover_func`. Requires that `cover_func` implement the prototype:
@@ -37,5 +37,7 @@ def make_GC_split(cover_func):
             p = prox.GCProx(local_socp, global_index, rho)
             prox_list.append(p)
 
+        #let's get rid of c_count and just let admm figure it out based on
+        #how many proxes touch each variable element
         return prox_list, c_count
     return split

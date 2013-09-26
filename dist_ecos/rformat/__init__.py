@@ -3,4 +3,3 @@
     inequality are stored in some array cone_array. These cones can include
     the zero cone to represent linear equality constraints.
 """
-

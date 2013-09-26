@@ -1,4 +1,4 @@
-from helpers import socp_to_R
+
 
 def start_row(n, k, i):
     '''start of ith partition of list of length n into k partitions'''
@@ -6,10 +6,10 @@ def start_row(n, k, i):
     r = n % k
     return d*i + min(i, r)
 
-def cover(socp_data, N):
-    """stacks the socp data and partitions it into N
+
+def cover(R, s, cone_array, N):
+    """Takes in global Rx <= s format and partitions it into N
     local dicts describing constraints R <= s"""
-    R, s, cone_array = socp_to_R(socp_data)
 
     local_list = []
 
@@ -26,4 +26,4 @@ def cover(socp_data, N):
 
         local_list.append(local_R_data)
 
-    return local_list, n
+    return local_list

@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 """Run an example of general form consensus"""
-import numpy as np
 import dist_ecos.split as split
-from dist_ecos.covers.helpers import show_spy
+from dist_ecos.rformat.helpers import show_spy
 from dist_ecos.admm import ADMM
 
 
@@ -16,7 +15,7 @@ ADMM.settings['max_iters'] = 1000
 
 #general consensus
 general = ADMM(5, split.GC_split)
-diffs = general.solve(gp)
+diffs = general.solve(gp.socp_vars)
 
 import pylab
 r = len(diffs)

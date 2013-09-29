@@ -65,6 +65,7 @@ class Prox(object):
         #we could have user input here, but we'll default to zero for now
         self.x = np.zeros((self.n))
         self.u = np.zeros((self.n))
+        self.zold = np.zeros((self.n))
 
         self.global_index = np.arange(self.n)
 
@@ -79,12 +80,16 @@ class Prox(object):
         sol = ecos.solve(**prox_socp_vars)
         return self.q.socp2prob(sol['x'])['x']
 
-    def xupdate(self, xbar):
-        offset = self.x - xbar
+    def xupdate(self, z):
+        offset = self.x - z
         self.u += offset
 
-        self.x = self.prox(xbar - self.u)
-        info = {'offset': np.linalg.norm(offset)**2}
+        rho = self.socp_vars['rho']
+        dual = (rho**2)*(np.linalg.norm(z - self.zold)**2)
+        self.zold = z
+
+        self.x = self.prox(z - self.u)
+        info = {'primal': np.linalg.norm(offset)**2, 'dual': dual}
         return self.x, info
 
 

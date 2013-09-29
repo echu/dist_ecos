@@ -12,12 +12,18 @@ print gp.socp_vars
 show_spy(gp.socp_vars)
 
 ADMM.settings['max_iters'] = 1000
+ADMM.settings['show_spy'] = True
 
 #general consensus
 general = ADMM(5, split.GC_split)
-diffs = general.solve(gp.socp_vars)
+result = general.solve(gp.socp_vars)
 
 import pylab
-r = len(diffs)
-pylab.semilogy(range(r), diffs)
+res_pri = result['res_pri']
+res_dual = result['res_dual']
+errs = result['errs']
+
+r = len(errs)
+pylab.semilogy(range(r), errs, range(r), res_pri, range(r), res_dual)
+pylab.legend(['errs', 'primal', 'dual'])
 pylab.show()

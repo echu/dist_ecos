@@ -15,9 +15,14 @@ ADMM.settings['show_spy'] = True
 
 #simple consensus
 simple = ADMM(4, split.SC_split)
-diffs = simple.solve(gp.socp_vars)
+result = simple.solve(gp.socp_vars)
 
 import pylab
-r = len(diffs)
-pylab.semilogy(range(r), diffs)
+res_pri = result['res_pri']
+res_dual = result['res_dual']
+errs = result['errs']
+
+r = len(errs)
+pylab.semilogy(range(r), errs, range(r), res_pri, range(r), res_dual)
+pylab.legend(['errs', 'primal', 'dual'])
 pylab.show()

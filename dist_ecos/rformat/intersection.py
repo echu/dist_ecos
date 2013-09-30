@@ -4,14 +4,14 @@
 """
 import numpy as np
 import scipy.sparse as sp
-from . standard import socp_to_R
+from . import standard
 
 
-def socp_to_R_intersect(socp_data):
+def convert(socp_data):
     """ Convert socp_data to a pure convex intersection format. The form is
         stored as R <= s where the cone types are described in cone_array.
     """
-    R, s, cone_array = socp_to_R(socp_data)
+    R, s, cone_array, is_intersect = standard.convert(socp_data)
 
     m, n = R.shape
 
@@ -36,7 +36,8 @@ def socp_to_R_intersect(socp_data):
     s = np.concatenate(s_list)
     cone_array = [cone for sublist in cone_list for cone in sublist]
 
-    return R, s, cone_array
+    return R, s, cone_array, True
 
 #ajf 9/26/13:  do we want to return a function to recover the original socp
 #solution from the stuffed intersection form?
+#echu: yeah, probably.

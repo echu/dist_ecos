@@ -2,7 +2,7 @@
 """Run an example of general form consensus"""
 import dist_ecos.split as split
 from dist_ecos.rformat.helpers import show_spy
-from dist_ecos.admm import ADMM
+from dist_ecos import ADMM
 
 
 #'global' problem
@@ -13,10 +13,11 @@ show_spy(gp.socp_vars)
 
 ADMM.settings['max_iters'] = 1000
 ADMM.settings['show_spy'] = True
+ADMM.settings['num_proxes'] = 5
 
 #general consensus
-general = ADMM(5, split.GC_split)
-result = general.solve(gp.socp_vars)
+ADMM.settings['split_method'] = split.GC_split
+result = ADMM.solve(gp.socp_vars)
 
 import pylab
 res_pri = result['res_pri']

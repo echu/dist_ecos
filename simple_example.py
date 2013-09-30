@@ -2,7 +2,7 @@
 """Run an example of simple consensus"""
 import dist_ecos.split as split
 from dist_ecos.rformat.helpers import show_spy
-from dist_ecos.admm import ADMM
+from dist_ecos import ADMM
 
 #'global' problem
 import dist_ecos.problems.svc as gp
@@ -11,11 +11,11 @@ print gp.socp_vars
 show_spy(gp.socp_vars)
 
 ADMM.settings['max_iters'] = 1000
-ADMM.settings['show_spy'] = True
+ADMM.settings['num_proxes'] = 4
 
 #simple consensus
-simple = ADMM(4, split.SC_split)
-result = simple.solve(gp.socp_vars)
+ADMM.settings['split_method'] = split.SC_split
+result = ADMM.solve(gp.socp_vars)
 
 import pylab
 res_pri = result['res_pri']

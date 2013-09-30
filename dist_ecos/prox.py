@@ -1,3 +1,7 @@
+""" Theoretically, we could implement this prox operator by hand when c = 0.
+
+    TODO: implement by hand if necessary
+"""
 from qcml import QCML
 import numpy as np
 import ecos
@@ -23,11 +27,16 @@ class Prox(object):
 
         prob_dims = 'dimension n'
 
-        prob_param = 'parameters c(n) v(n)\nparameter rho positive'
+        if self.socp_vars['c'] is None:
+            prob_param = 'parameters v(n)'
+            prob_obj = "minimize norm(x-v)"
+        else:
+            prob_param = 'parameters c(n) v(n)\nparameter rho positive'
+            prob_obj = "minimize c'*x + rho/2*square(norm(x-v))"
+            
 
         prob_var = 'variable x(n)'
 
-        prob_obj = "minimize c'*x + rho/2*square(norm(x-v))"
 
         prob_const = ''
 
@@ -37,7 +46,7 @@ class Prox(object):
             mA, nA = self.socp_vars['A'].shape
             prob_dims += '\ndimension mA'
             prob_param += '\nparameters A(mA,n) b(mA)'
-            prob_const += 'A*x == b'
+            prob_const += 'A*x == b\n'
 
         if self.socp_vars['G'] is None:
             mG, nG = 0, 0
@@ -54,7 +63,11 @@ class Prox(object):
         self.n = max(nA, nG)
 
         q = QCML()
-        q.parse(s)
+        try:
+            q.parse(s)
+        except:
+            print s
+            raise
         q.canonicalize()
         q.dims = {'mA': mA, 'mG': mG, 'n': self.n}
         q.codegen('python')
@@ -74,7 +87,11 @@ class Prox(object):
         self.socp_vars['v'] = v
 
         #now we have v, so we can stuff the matrices
-        prox_socp_vars = self.q.prob2socp(self.socp_vars)
+        try:
+            prox_socp_vars = self.q.prob2socp(self.socp_vars)
+        except:
+            print self.q.prob2socp.numbered_source
+            raise
 
         #call ecos to produce the prox
         sol = ecos.solve(**prox_socp_vars)

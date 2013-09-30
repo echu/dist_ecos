@@ -15,25 +15,27 @@ runs = 1000
 ADMM.settings['num_proxes'] = 4
 ADMM.settings['max_iters'] = runs
 
+# tests[type] returns tuple with split method and whether to reset
 tests = {
-    'simple':               split.SC_split,
-    'simple with metis':    split.SC_metis_split,
-    'simple with random':   split.SC_random_split,
-    'general':              split.GC_split,
-    'general with metis':   split.GC_metis_split,
-    'general with random':  split.GC_random_split,
-    'simple int':           split.SC_intersect,
-    'simple int metis':     split.SC_metis_intersect,
-    'simple int random':    split.SC_random_intersect,
-    'general int':          split.GC_intersect,
-    'general int metis':    split.GC_metis_intersect,
-    'general int random':   split.GC_random_intersect
+    'simple':               (split.SC_split, False),
+    'simple with metis':    (split.SC_metis_split, False),
+    'simple with random':   (split.SC_random_split, False),
+    'general':              (split.GC_split, False),
+    'general with metis':   (split.GC_metis_split, False),
+    'general with random':  (split.GC_random_split, False),
+    'simple int':           (split.SC_intersect, True),
+    'simple int metis':     (split.SC_metis_intersect, True),
+    'simple int random':    (split.SC_random_intersect, True),
+    'general int':          (split.GC_intersect, True),
+    'general int metis':    (split.GC_metis_intersect, True),
+    'general int random':   (split.GC_random_intersect, True)
 }
 results = {}
 
-for label, split_method in tests.iteritems():
+for label, test_params in tests.iteritems():
+    split_method, with_reset = test_params
     ADMM.settings['split_method'] = split_method
-    results[label] = ADMM.solve(gp.socp_vars)
+    results[label] = ADMM.solve(gp.socp_vars, with_reset)
 
 import pylab
 lines = []

@@ -108,6 +108,9 @@ class Prox(object):
         self.x = self.prox(z - self.u)
         info = {'primal': np.linalg.norm(offset)**2, 'dual': dual}
         return self.x, info
+        
+    def restart(self):
+        self.u = np.zeros((self.n))
 
 
 class GCProx(Prox):

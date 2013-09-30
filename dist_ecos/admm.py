@@ -11,7 +11,7 @@ settings = {
 }
 
 
-def solve(socp_data):
+def solve(socp_data, with_reset = False):
     """ Solves the problem using ADMM
     """
     import math
@@ -44,9 +44,15 @@ def solve(socp_data):
 
             pri_total += info['primal']
             dual_total += info['dual']
-
-        z_old = z
-        z = z_total/z_count
+            
+        # restarting
+        if with_reset and (j > 2) and (math.sqrt(pri_total) >= res_pri[-1]):
+            for p in proxes:
+                p.restart()
+        else:
+            z_old = z
+            z = z_total/z_count
+    
 
         #should remove this, just leaving it here for now because
         #it should match the dual residual in the simple consensus case
@@ -55,6 +61,6 @@ def solve(socp_data):
         res_pri.append(math.sqrt(pri_total))
         res_dual.append(math.sqrt(dual_total))
 
-        result = {'errs': errs, 'res_pri': res_pri, 'res_dual': res_dual}
+    result = {'errs': errs, 'res_pri': res_pri, 'res_dual': res_dual}
 
     return result

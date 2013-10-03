@@ -5,7 +5,7 @@ import numpy as np
 import scipy.sparse as sp
 
 
-def socp_to_R(socp_data):
+def convert(socp_data):
     """Stack the equality and inequality constraints.
     Return stacked structure, and cone_array to describe what cone
     is associated with each row.
@@ -28,4 +28,4 @@ def socp_to_R(socp_data):
 
     cone_array = ['z']*z + ['l']*l
 
-    return R, s, cone_array
+    return R, s, cone_array, False

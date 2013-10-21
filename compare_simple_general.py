@@ -47,9 +47,10 @@ for label, test_params in tests.iteritems():
         'show spy':     False       # UNUSED
     }
     """
-    options = {'N': N, 'max iters': runs, 'rho': 2, 'multiprocess': True, 
+    options = {'N': N, 'max iters': runs, 'rho': 2, 'multiprocess': True,
                'split': split, 'consensus': consensus}
     results[label] = consensus_conic_opt.solve(gp.socp_vars, options)
+
 
 def objective(x):
     return gp.socp_vars['c'].dot(x)
@@ -76,7 +77,7 @@ for label in tests.keys():
     lines.append(line[0])
     pylab.ylabel('primal residual')
 
-    pylab.subplot(2,1,2)
+    pylab.subplot(2, 1, 2)
     pylab.semilogy(range(runs), res_dual, style, color=color)
     pylab.xlabel('iteration')
     pylab.ylabel('dual residual')

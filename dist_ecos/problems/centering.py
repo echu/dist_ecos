@@ -13,7 +13,7 @@ b = np.zeros(m)
 
 for i in range(m):
     a = np.random.randn(n)
-    a = a/np.linalg.norm(a)
+    a = a / np.linalg.norm(a)
     bi = 1 + np.random.rand(1)
 
     A[i, :] = a
@@ -32,7 +32,7 @@ q.dims = {'m': m, 'n': n}
 q.codegen("python")
 socp_data = q.prob2socp(locals())
 
-#stuffed variable size
+# stuffed variable size
 n = socp_data['G'].shape[1]
 
 ecos_sol = ecos.solve(**socp_data)

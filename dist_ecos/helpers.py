@@ -6,12 +6,12 @@ def show_spy(socp_vars):
 
     pylab.figure(1)
     pylab.subplot(211)
-    #print 'A is', socp_vars['A']
+    # print 'A is', socp_vars['A']
     if socp_vars['A'] is not None:
         pylab.spy(socp_vars['A'], marker='.')
     pylab.xlabel('A')
 
-    #print 'G is', socp_vars['G']
+    # print 'G is', socp_vars['G']
     pylab.subplot(212)
     pylab.spy(socp_vars['G'], marker='.')
     pylab.xlabel('G')

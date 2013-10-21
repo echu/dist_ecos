@@ -4,8 +4,8 @@ import numpy as np
 from qcml import QCML
 import ecos
 
-n = 2      # number of features
-m = 100   # number of examples
+n = 32      # number of features
+m = 1024   # number of examples
 X = np.random.randn(m, n) - 1
 Y = np.random.randn(m, n) + 1
 
@@ -15,7 +15,7 @@ variable a(n)
 variable b
 parameter X(m,n)      # positive samples
 parameter Y(m,n)      # negative samples
-minimize (sum(pos(1 - X*a + b) + pos(1 + Y*a - b)))
+minimize (0.1*norm(a) + sum(pos(1 - X*a + b) + pos(1 + Y*a - b)))
 """
 
 p = QCML()

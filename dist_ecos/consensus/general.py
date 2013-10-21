@@ -1,65 +1,61 @@
-from .. rformat.to_socp import R_to_reduced_socp
-#from .. rformat.standard import socp_to_R
-from .. import prox
+
 import numpy as np
+import scipy.sparse as sp
 
+def squish(A,G):
+    if A is not None:
+        A = A.tocoo()
+        p, n = A.shape
+        Acol = A.col
+    else:
+        p = 0
+        Acol = np.empty(0)
+    
+    if G is not None:
+        G = G.tocoo()
+        m, n = G.shape
+        Gcol = G.col
+    else:
+        m = 0
+        Gcol = np.empty(0)
+    
+    vars_touched = np.hstack((Acol, Gcol))
+    global_index, cols = np.unique(vars_touched, return_inverse = True)
+    
+    if A is not None:
+        A = sp.coo_matrix((A.data, (A.row, cols)), shape=(p, len(global_index)))
+    if G is not None:
+        G = sp.coo_matrix((G.data, (G.row, cols)), shape=(m, len(global_index)))
+    
+    return A, G, np.array(global_index, dtype=np.int)
+    
 
-def make_GC_split(cover_func, conversion_func):
-    """ Creates a general consensus split using the cover function in
-        `cover_func` and the SOCP conversion function in `conversion_func`.
-         Requires that `cover_func` implement the prototype:
-
-            list_of_equations = cover_func(R, s, cone_array, num_partitions)
+def deal(socp_data, N, A_ind, G_ind, linear, soc):
+    socp_datas = []
+    indices = []
+    for i in xrange(N):
+        local_socp_data = {'c': socp_data['c']}
+        # A_ind[i] indexes into A, G_ind[i] indexes into G
         
-        Requires that `conversion_func` implement the prototype:
+        # if equality constraints exist and the group has elements
+        if socp_data['A'] is not None and A_ind[i]:
+            local_socp_data['A'] = socp_data['A'][A_ind[i], :]
+            local_socp_data['b'] = socp_data['b'][A_ind[i]]
+        else:
+            local_socp_data['A'] = None
+            local_socp_data['b'] = None
         
-            R, s, cone_array, is_intersect = conversion_func(socp_data)
+        if G_ind[i]:
+            local_socp_data['G'] = socp_data['G'][G_ind[i], :]
+            local_socp_data['h'] = socp_data['h'][G_ind[i]]
+        else:
+            local_socp_data['G'] = None
+            local_socp_data['h'] = None
+        A, G = local_socp_data['A'], local_socp_data['G']
+        A, G, index = squish(A, G)
+        local_socp_data['A'], local_socp_data['G'] = A, G
         
-        where socp_data is a dictionary containing
-            {'c': objective vector,
-             'A': equality constraint matrix
-             'b': equality constraint vector
-             'G': cone inequality matrix
-             'h': cone inequality vector
-             'dims': list of cones}
-    """
-    def split(socp_data, N):
-        """ General consensus splitting
-            Takes in a full socp description from QCML and returns a
-            list of general consensus prox operators
-        """
-        rho = 1
-
-        R, s, cone_array, is_intersect = conversion_func(socp_data)
-        
-        c = socp_data['c']
-        n = R.shape[1]
-
-        R_list = cover_func(R, s, cone_array, N)
-        local_socp_list = []
-        prox_list = []
-
-        count = np.zeros((n))
-
-        #convert form R-form to socp form
-        #also, count the global variables, to normalize 'c' correctly later
-        for R_data in R_list:
-            local_socp, global_index = R_to_reduced_socp(R_data)
-            count[global_index] += 1
-            local_socp_list.append((local_socp, global_index))
-
-        #form the local socp prox objects, with correctly normalized c
-        for local_socp, global_index in local_socp_list:
-            if is_intersect:
-                local_socp['c'] = None
-            else:
-                local_socp['c'] = c[global_index]/count[global_index]
-            p = prox.GCProx(local_socp, global_index, rho)
-            prox_list.append(p)
-
-        #let's get rid of c_count and just let admm figure it out based on
-        #how many proxes touch each variable element
-        #
-        #echu: now returns the length of the global variable
-        return prox_list, n
-    return split
+        local_socp_data['dims'] = {'l': linear[i], 'q': soc[i], 's': []}
+        indices.append(index)     # global index
+        socp_datas.append(local_socp_data)
+    return socp_datas, indices

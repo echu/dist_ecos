@@ -2,72 +2,19 @@ import pymetis as pm
 import networkx as nx
 import numpy as np
 import scipy.sparse as sp
+from . utils import form_laplacian
 
 
-def form_laplacian(A):
-    """Form the Laplacian of a sparse, rectangular matrix.
-    """
-    A = A.tocoo()
-    m, n = A.shape
-
-    ii = np.hstack((A.row + n, A.col))
-    jj = np.hstack((A.col, A.row + n))
-    vv = np.hstack((A.data, A.data))
-
-    symA = sp.coo_matrix((vv, (ii, jj)), (m+n, m+n))
-    return sp.csgraph.laplacian(symA)
-
-
-def cover(R, s, cone_array, N):
+def cover(socp_data, N):
     """stacks the socp data and partitions it into N
     local dicts describing constraints R <= s"""
-
+    n = socp_data['c'].shape[0]
+    
     # form the Laplacian and use pymetis to partition
-    L = form_laplacian(R)
+    L = form_laplacian(socp_data)
     graph = nx.from_scipy_sparse_matrix(L)
     cuts, part_vert = pm.part_graph(N, graph)
+    
+    return part_vert[n:]
 
-    local_list = []
-    m, n = R.shape
-
-    list_of_lists = [[] for i in xrange(N)]
-    for i, group in enumerate(part_vert[n:]):
-        list_of_lists[group].append(i)
-        
-    # # always include the first row (for fun)
-    # for l in list_of_lists:
-    #     if 0 not in l:
-    #         l.append(0)
-
-    # # for plotting...
-    # import pylab
-    # pylab.figure(1)
-    # pylab.subplot(211)
-    # 
-    # pylab.spy(R, marker='.')
-    # 
-    # pylab.subplot(212)
-    # 
-    # color = "rgbcmyk"
-    # 
-    # for i in xrange(N):
-    #     H = R[list_of_lists[i],:].tocoo()
-    #     row = np.array(list_of_lists[i])[H.row]
-    #     col = H.col
-    #     values = H.data
-    #     to_show = sp.coo_matrix((values, (row,col)), (m,n))
-    #     pylab.spy(to_show, marker='.', color=color[i])
-    # 
-    # 
-    # 
-    # pylab.show()
-
-    for i in xrange(N):
-        local_R_data = {}
-        local_R_data['R'] = R[list_of_lists[i], :]
-        local_R_data['s'] = s[list_of_lists[i]]
-        local_R_data['cone_array'] = np.array(cone_array)[list_of_lists[i]]
-
-        local_list.append(local_R_data)
-
-    return local_list
+    

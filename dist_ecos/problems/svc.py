@@ -4,8 +4,8 @@ import numpy as np
 from qcml import QCML
 import ecos
 
-n = 32      # number of features
-m = 1024   # number of examples
+n = 2      # number of features
+m = 100   # number of examples
 X = np.random.randn(m, n) - 1
 Y = np.random.randn(m, n) + 1
 

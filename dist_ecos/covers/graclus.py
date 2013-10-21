@@ -4,8 +4,12 @@ import numpy as np
 import scipy.sparse as sp
 
 from . utils import form_laplacian
+from .. import settings
 
 def cover(socp_data, N):
+    if not settings.paths['graclus']:
+        raise Exception("Please provide a path to graclus: settings.paths['graculus'] = PATH.")
+        
     """stacks the socp data and partitions it into N
     local dicts describing constraints R <= s"""
     n = socp_data['c'].shape[0]
@@ -24,7 +28,7 @@ def cover(socp_data, N):
     
     import subprocess
     outpath = "graclus.edgelist.part.%d" % N
-    proc = subprocess.Popen(["/Users/echu/src/graclus1.2/graclus", edgepath, str(N)])
+    proc = subprocess.Popen([settings.paths['graclus'], edgepath, str(N)])
     proc.wait()
     
     lines = open(outpath,"r").readlines()

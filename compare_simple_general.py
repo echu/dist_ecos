@@ -1,9 +1,13 @@
 #!/usr/bin/env python
 
 """Compare simple consensus vs general consensus on the same problem"""
-import dist_ecos.split as split
-from dist_ecos import consensus_conic_opt
-from dist_ecos.rformat.helpers import show_spy
+from dist_ecos import consensus_conic_opt, settings
+from dist_ecos.helpers import show_spy
+
+# set up paths to partitioners
+settings.paths['graclus'] = "/Users/echu/src/graclus1.2/graclus"
+settings.paths['mondriaan'] = "/Users/echu/src/Mondriaan4/tools/Mondriaan"
+# TODO: do the same for metis (so we can avoid pymetis)
 
 #'global' problem
 import dist_ecos.problems.svc as gp
@@ -12,7 +16,7 @@ print gp.socp_vars
 show_spy(gp.socp_vars)
 
 runs = 100
-N = 16
+N = 6
 
 # tests[type] returns tuple with split method
 tests = {
@@ -21,7 +25,8 @@ tests = {
     'graclus':      ('graclus', 'general'),
     'mondriaan':    ('mondriaan', 'general'),
     'random':       ('random', 'general'),
-    'metis':        ('metis', 'general')
+    'metis':        ('metis', 'general'),
+    'laplacian':    ('laplacian', 'general')
 }
 results = {}
 
@@ -42,7 +47,7 @@ for label, test_params in tests.iteritems():
         'show spy':     False       # UNUSED
     }
     """
-    options = {'N': N, 'max iters': runs, 'rho': 2, 'multiprocess': False, 
+    options = {'N': N, 'max iters': runs, 'rho': 2, 'multiprocess': True, 
                'split': split, 'consensus': consensus}
     results[label] = consensus_conic_opt.solve(gp.socp_vars, options)
 
@@ -66,7 +71,7 @@ for label in tests.keys():
     res_pri = results[label]['res_pri']
     res_dual = results[label]['res_dual']
     #errs = results[label]['errs']
-    pylab.subplot(2,1,1)
+    pylab.subplot(2, 1, 1)
     line = pylab.semilogy(range(runs), res_pri, style, color=color)
     lines.append(line[0])
     pylab.ylabel('primal residual')
@@ -76,8 +81,6 @@ for label in tests.keys():
     pylab.xlabel('iteration')
     pylab.ylabel('dual residual')
 
-pylab.figlegend(lines, tests.keys(), loc='upper center', shadow=True, fancybox=True, ncol=3)
+pylab.figlegend(lines, tests.keys(), loc='upper center', shadow=True,
+                fancybox=True, ncol=3)
 pylab.show()
-
-
-

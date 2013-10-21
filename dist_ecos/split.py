@@ -1,7 +1,7 @@
 import numpy as np
 import itertools
 
-from . covers import metis, naive, random, graclus, mondriaan
+from . covers import metis, naive, random, graclus, mondriaan, laplacian
 from . consensus import general, simple
 
 from . proxes.prox_list import ProxList
@@ -12,7 +12,8 @@ split = {
     'random':       random.cover,
     'graclus':      graclus.cover,
     'metis':        metis.cover,
-    'mondriaan':    mondriaan.cover
+    'mondriaan':    mondriaan.cover,
+    'laplacian':    laplacian.cover
 }
 
 deal = {
@@ -80,4 +81,3 @@ def split_problem(socp_data, user_options):
         proxes.append( Prox(data, count, global_index = index, **user_options) )
     
     return ProxList(n, proxes, **user_options)
-    

@@ -5,10 +5,14 @@ import scipy.io as io
 import scipy.sparse as sp
 
 from . utils import form_laplacian
+from .. import settings
 
 def cover(socp_data, N):
     """stacks the socp data and partitions it into N
     local dicts describing constraints R <= s"""
+    if not settings.paths['mondriaan']:
+        raise Exception("Please provide a path to mondriaan: settings.paths['mondriaan'] = PATH.")
+    
     n = socp_data['c'].shape[0]
 
     # form the Laplacian and use pymetis to partition
@@ -18,7 +22,7 @@ def cover(socp_data, N):
     
     import subprocess
     outpath = "mondriaan.mtx-P%d" % N
-    proc = subprocess.Popen(["/Users/echu/src/Mondriaan4/tools/Mondriaan", "mondriaan.mtx", str(N), "0.05"])
+    proc = subprocess.Popen([settings.paths['mondriaan'], "mondriaan.mtx", str(N), "0.05"])
     proc.wait()
     
     with open(outpath,"r") as f:

@@ -11,7 +11,7 @@ settings = {
 }
 
 
-def solve(socp_data, with_reset = False):
+def solve(socp_data, with_reset=False):
     """ Solves the problem using ADMM
     """
     import math

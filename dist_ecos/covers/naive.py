@@ -11,6 +11,12 @@ def cover(R, s, cone_array, N):
     """Takes in global Rx <= s format and partitions it into N
     local dicts describing constraints R <= s"""
 
+    m, n = R.shape
+
+    return cover_order(R, s, cone_array, N, range(m))
+
+
+def cover_order(R, s, cone_array, N, order):
     local_list = []
 
     m, n = R.shape
@@ -20,9 +26,11 @@ def cover(R, s, cone_array, N):
         start = start_row(m, N, i)
         stop = start_row(m, N, i+1)
 
-        local_R_data['R'] = R[start:stop, :]
-        local_R_data['s'] = s[start:stop]
-        local_R_data['cone_array'] = cone_array[start:stop]
+        rows = order[start:stop]
+
+        local_R_data['R'] = R[rows, :]
+        local_R_data['s'] = s[rows]
+        local_R_data['cone_array'] = [cone_array[i] for i in rows]
 
         local_list.append(local_R_data)
 

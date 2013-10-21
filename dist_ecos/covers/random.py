@@ -20,12 +20,11 @@ def cover(R, s, cone_array, N):
     list_of_lists = [[] for i in xrange(N)]
     for i, group in enumerate(random_partition):
         list_of_lists[group].append(i)
-        
+
     # # always include the first row (for fun)
     # for l in list_of_lists:
     #     if 0 not in l:
     #         l.append(0)
-    
 
     for i in xrange(N):
         local_R_data = {}

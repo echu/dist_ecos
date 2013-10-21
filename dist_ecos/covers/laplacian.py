@@ -1,6 +1,6 @@
 import numpy as np
-from naive import cover_order
-
+import scipy.sparse as sp
+from . utils import collapse_cones
 ''' Compute matrix rows similarity and produce an ordering using the
     second eigenvalue of the Laplacian matrix.
 
@@ -77,9 +77,35 @@ def sort_by_sim(S, reg=1):
     #plot(v[order,sort_indx[1]])
     return order
 
+def start_row(n, k, i):
+    '''start of ith partition of list of length n into k partitions'''
+    d = n//k
+    r = n % k
+    return d*i + min(i, r)
 
-def cover(R, s, cone_array, N):
+def cover_order(order, m, N):
+    local_list = []
+
+    part = np.zeros((m), dtype=np.int)
+    for i in xrange(N):
+        local_R_data = {}
+        start = start_row(m, N, i)
+        stop = start_row(m, N, i+1)
+
+        part[ order[start:stop] ] = i
+
+    return part
+
+
+def cover(socp_data, N):
     #S = jaccard_sim(R.toarray())
+    if socp_data['A'] is not None:
+        R = sp.vstack((socp_data['A'], collapse_cones(socp_data)))
+    else:
+        R = collapse_cones(socp_data)
     S = cos_sim(R.toarray())
     order = sort_by_sim(S)
-    return cover_order(R, s, cone_array, N, order)
+    
+    cone_lengths = socp_data['dims']['l'] + len(socp_data['dims']['q'])
+    
+    return cover_order(order, cone_lengths, N)

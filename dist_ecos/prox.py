@@ -1,10 +1,15 @@
-""" Theoretically, we could implement this prox operator by hand when c = 0.
+""" UNUSED NOW
+
+    Theoretically, we could implement this prox operator by hand when c = 0.
 
     TODO: implement by hand if necessary
 """
 from qcml import QCML
 import numpy as np
 import ecos
+
+import pdos_direct
+import cvxopt
 
 
 class Prox(object):
@@ -17,6 +22,9 @@ class Prox(object):
         rho is the admm parameter
 
         I assume G*x <= h is just linear cones. no quadratic!'''
+        
+        #print socp_vars
+        #raw_input("asdfasf")
         self.socp_vars = socp_vars
         self.socp_vars['rho'] = rho
         #self.global_indx = socp_vars['global_indx']
@@ -82,7 +90,7 @@ class Prox(object):
 
         self.global_index = np.arange(self.n)
 
-    def prox(self, v):
+    def prox(self, v, solver):
         '''computes prox_{f/rho}(v)'''
         self.socp_vars['v'] = v
 
@@ -94,10 +102,56 @@ class Prox(object):
             raise
 
         #call ecos to produce the prox
-        sol = ecos.solve(**prox_socp_vars)
-        return self.q.socp2prob(sol['x'])['x']
+        if solver == "ecos":
+            sol = ecos.solve(**prox_socp_vars)
+        
+        #call pdos to produce the prox
+        else:
+            opts = {'MAX_ITERS': 100, 'NORMALIZE': True, 'ALPHA': 1.8, 'EPS_ABS': 1e-8,'VERBOSE': False}
+            c = cvxopt.matrix(prox_socp_vars['c'])
+            dims = prox_socp_vars['dims']
 
-    def xupdate(self, z):
+            if prox_socp_vars['b'] is not None:
+                b = cvxopt.matrix([
+                    cvxopt.matrix(prox_socp_vars['b']), 
+                    cvxopt.matrix(prox_socp_vars['h'])
+                ])
+                dims['f'] = prox_socp_vars['b'].size
+            else:
+                b = cvxopt.matrix(prox_socp_vars['h'])
+                dims['f'] = 0
+        
+            if prox_socp_vars['A'] is not None:
+                Acoo = prox_socp_vars['A'].tocoo()
+                Gcoo = prox_socp_vars['G'].tocoo()
+                m = Acoo.shape[0]
+                A = cvxopt.spmatrix(
+                    cvxopt.matrix([cvxopt.matrix(Acoo.data), cvxopt.matrix(Gcoo.data)]), 
+                    cvxopt.matrix([cvxopt.matrix(Acoo.row), cvxopt.matrix(Gcoo.row+m)]), 
+                    cvxopt.matrix([cvxopt.matrix(Acoo.col), cvxopt.matrix(Gcoo.col)])
+                )
+            else:
+                Gcoo = prox_socp_vars['G'].tocoo()
+                A = cvxopt.spmatrix(Gcoo.data, Gcoo.row, Gcoo.col)
+        
+            if hasattr(self, 'x0') and hasattr(self, 'y0') and hasattr(self, 's0'):
+                sol = pdos_direct.solve(c,A,b,dims, opts, self.x0, self.y0, self.s0)
+            else:
+                sol = pdos_direct.solve(c,A,b,dims, opts)
+                    
+            self.x0 = sol['x']
+            self.y0 = sol['y']
+            self.s0 = sol['s']
+        
+        #print sol['x']
+        #print sol['y']
+
+        x = np.array(sol['x'])
+        x = np.reshape(x, (x.shape[0],))
+                
+        return self.q.socp2prob(x)['x']
+
+    def xupdate(self, z, solver):
         offset = self.x - z
         self.u += offset
 
@@ -105,7 +159,7 @@ class Prox(object):
         dual = (rho**2)*(np.linalg.norm(z - self.zold)**2)
         self.zold = z
 
-        self.x = self.prox(z - self.u)
+        self.x = self.prox(z - self.u, solver)
         info = {'primal': np.linalg.norm(offset)**2, 'dual': dual}
         return self.x, info
         

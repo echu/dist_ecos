@@ -1,7 +1,3 @@
-""" Helpers for problem formation code
-"""
-
-
 def show_spy(socp_vars):
     '''Show the sparsity pattern of A and G in
     the socp_vars dictionary

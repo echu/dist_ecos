@@ -15,7 +15,7 @@ variable a(n)
 variable b
 parameter X(m,n)      # positive samples
 parameter Y(m,n)      # negative samples
-minimize (sum(pos(1 - X*a + b) + pos(1 + Y*a - b)))
+minimize (0.1*norm(a) + sum(pos(1 - X*a + b) + pos(1 + Y*a - b)))
 """
 
 p = QCML()

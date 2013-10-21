@@ -1,24 +1,83 @@
-from . consensus.general import make_GC_split
-from . consensus.simple import make_SC_split
-from . covers import metis, naive, random, laplacian
-from . rformat import intersection, standard
+import numpy as np
+import itertools
 
-GC_split = make_GC_split(naive.cover, standard.convert)
-GC_metis_split = make_GC_split(metis.cover, standard.convert)
-GC_random_split = make_GC_split(random.cover, standard.convert)
-GC_laplacian_split = make_GC_split(laplacian.cover, standard.convert)
+from . covers import metis, naive, random, graclus, mondriaan, laplacian
+from . consensus import general, simple
 
-SC_split = make_SC_split(naive.cover, standard.convert)
-SC_metis_split = make_SC_split(metis.cover, standard.convert)
-SC_random_split = make_SC_split(random.cover, standard.convert)
-SC_laplacian_split = make_SC_split(laplacian.cover, standard.convert)
+from . proxes.prox_list import ProxList
+from . proxes.prox import Prox
 
-GC_intersect = make_GC_split(naive.cover, intersection.convert)
-GC_metis_intersect = make_GC_split(metis.cover, intersection.convert)
-GC_random_intersect = make_GC_split(random.cover, intersection.convert)
-GC_laplacian_intersect = make_GC_split(laplacian.cover, intersection.convert)
+split = {
+    'naive':        naive.cover,
+    'random':       random.cover,
+    'graclus':      graclus.cover,
+    'metis':        metis.cover,
+    'mondriaan':    mondriaan.cover,
+    'laplacian':    laplacian.cover
+}
 
-SC_intersect = make_SC_split(naive.cover, intersection.convert)
-SC_metis_intersect = make_SC_split(metis.cover, intersection.convert)
-SC_random_intersect = make_SC_split(random.cover, intersection.convert)
-SC_laplacian_intersect = make_SC_split(laplacian.cover, intersection.convert)
+deal = {
+    'simple':       simple.deal,
+    'general':      general.deal,
+}
+
+def partition(socp_data, N, part):
+    if socp_data['A']:
+        p = socp_data['A'].shape[0]
+    else:
+        p = 0
+        
+    cone_array = np.hstack( (np.arange(p + socp_data['dims']['l'] + 1),
+                            p + socp_data['dims']['l'] + np.cumsum(socp_data['dims']['q'])))
+    # should have len(cone_array) == p + m + 1
+    
+    # this step performs the partition
+    A_list_of_lists = [[] for i in xrange(N)]
+    G_list_of_lists = [[] for i in xrange(N)]
+    linear_cones = [0 for i in xrange(N)]
+    soc_cones = [[] for i in xrange(N)]
+    for i, group in enumerate(part):
+        if i < p:
+            A_list_of_lists[group].append(i)
+        else:
+            ind = i - p
+            start = cone_array[ind]
+            end = cone_array[ind+1]
+            G_list_of_lists[group].extend(range(start,end))
+            if end-start == 1:
+                linear_cones[group] += 1
+            else:
+                soc_cones[group].append(int(end - start))
+                
+    return A_list_of_lists, G_list_of_lists, linear_cones, soc_cones
+
+
+
+def split_problem(socp_data, user_options):    
+    n = socp_data['c'].shape[0]
+    N = user_options['N']
+
+    split_func = split[user_options['split']]
+    deal_func = deal[user_options['consensus']]
+
+    cover = split_func(socp_data, N)
+    cover_info = partition(socp_data, N, cover)
+    socp_datas, indices = deal_func(socp_data, N, *cover_info)
+    
+    # count subsystems
+    count = np.zeros((n))
+    for index in indices:
+        if index is not None:
+            count[index] += 1
+        else:
+            count += 1
+    
+    proxes = []
+    for data, index in itertools.izip(socp_datas, indices):
+        data['c'] = data['c'] / count
+        if index is not None:
+            # select out elements
+            data['c'] = data['c'][index]
+        proxes.append( Prox(data, count, global_index = index, **user_options) )
+    
+    return ProxList(n, proxes, **user_options)

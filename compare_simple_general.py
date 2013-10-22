@@ -12,27 +12,33 @@ settings.paths['mondriaan'] = "/Users/echu/src/Mondriaan4/tools/Mondriaan"
 #'global' problem
 import dist_ecos.problems.svc as gp
 
-print gp.socp_vars
-show_spy(gp.socp_vars)
+# print gp.socp_vars
+# show_spy(gp.socp_vars)
 
 runs = 100
-N = 6
+N = 32
 
 # tests[type] returns tuple with split method
 tests = {
-    'naive':        ('naive', 'simple'),
-    'general':      ('naive', 'general'),
-    'graclus':      ('graclus', 'general'),
-    'mondriaan':    ('mondriaan', 'general'),
-    'random':       ('random', 'general'),
-    'metis':        ('metis', 'general'),
-    'laplacian':    ('laplacian', 'general')
+    #'naive':        ('naive', 'simple', 'ecos'),
+    'general':      ('naive', 'general', 'ecos'),
+    #'graclus':      ('graclus', 'general', 'ecos'),
+    #'mondriaan':    ('mondriaan', 'general', 'ecos'),
+    #'random':       ('random', 'general', 'ecos'),
+    #'metis':        ('metis', 'general', 'ecos'),
+    #'laplacian':    ('laplacian', 'general', 'ecos'),
+    # 'general pdos':      ('naive', 'general', 'pdos'),
+    # 'graclus pdos':      ('graclus', 'general', 'pdos'),
+    # 'mondriaan pdos':    ('mondriaan', 'general', 'pdos'),
+    # 'random pdos':       ('random', 'general', 'pdos'),
+    # 'metis pdos':        ('metis', 'general', 'pdos'),
+    # 'laplacian pdos':    ('laplacian', 'general', 'pdos')
 }
 results = {}
 
 
 for label, test_params in tests.iteritems():
-    split, consensus = test_params
+    split, consensus, solver = test_params
     """
     __default_options = {
         'multiprocess': False,      # whether to use multiprocessing
@@ -47,8 +53,8 @@ for label, test_params in tests.iteritems():
         'show spy':     False       # UNUSED
     }
     """
-    options = {'N': N, 'max iters': runs, 'rho': 2, 'multiprocess': True, 
-               'split': split, 'consensus': consensus}
+    options = {'N': N, 'max iters': runs, 'rho': 1, 'multiprocess': True, 
+               'split': split, 'consensus': consensus, 'solver': solver}
     results[label] = consensus_conic_opt.solve(gp.socp_vars, options)
 
 def objective(x):

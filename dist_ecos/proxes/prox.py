@@ -120,7 +120,7 @@ class Prox(object):
         
         #call pdos to produce the prox
         else:
-            opts = {'MAX_ITERS': 100, 'NORMALIZE': True, 'ALPHA': 1.8, 'EPS_ABS': 1e-8,'VERBOSE': False}
+            opts = {'MAX_ITERS': 500, 'NORMALIZE': True, 'ALPHA': 1.8, 'EPS_ABS': 1e-8,'VERBOSE': False}
             c = cvxopt.matrix(self.socp_vars['c'])
             dims = self.socp_vars['dims']
 

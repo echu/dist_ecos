@@ -35,10 +35,3 @@ You may also have to modify line 525 in `aksetup_helper.py`
 
 	"boost_%s" -> "boost_%s-mt"
 
-TODO
-====
-- move examples
-- make a parallel example
-- compute/use residual info (done in the last iteration, copy code to the newer code)
-- make some objects/functions/things to contain the various types of solvers
-- do primal/dual set intersection solversg

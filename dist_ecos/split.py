@@ -21,6 +21,7 @@ deal = {
     'general':      general.deal,
 }
 
+
 def partition(socp_data, N, part):
     if socp_data['A']:
         p = socp_data['A'].shape[0]
@@ -30,7 +31,7 @@ def partition(socp_data, N, part):
     cone_array = np.hstack( (np.arange(p + socp_data['dims']['l'] + 1, dtype=np.int),
                             p + socp_data['dims']['l'] + np.cumsum(socp_data['dims']['q'], dtype=np.int)))
     # should have len(cone_array) == p + m + 1
-    
+
     # this step performs the partition
     A_list_of_lists = [[] for i in xrange(N)]
     G_list_of_lists = [[] for i in xrange(N)]
@@ -42,18 +43,17 @@ def partition(socp_data, N, part):
         else:
             ind = i - p
             start = cone_array[ind]
-            end = cone_array[ind+1]
-            G_list_of_lists[group].extend(range(start,end))
-            if end-start == 1:
+            end = cone_array[ind + 1]
+            G_list_of_lists[group].extend(range(start, end))
+            if end - start == 1:
                 linear_cones[group] += 1
             else:
                 soc_cones[group].append(int(end - start))
-                
+
     return A_list_of_lists, G_list_of_lists, linear_cones, soc_cones
 
 
-
-def split_problem(socp_data, user_options):    
+def split_problem(socp_data, user_options):
     n = socp_data['c'].shape[0]
     N = user_options['N']
 
@@ -63,7 +63,7 @@ def split_problem(socp_data, user_options):
     cover = split_func(socp_data, N)
     cover_info = partition(socp_data, N, cover)
     socp_datas, indices = deal_func(socp_data, N, *cover_info)
-    
+
     # count subsystems
     count = np.zeros((n))
     for index in indices:
@@ -72,20 +72,20 @@ def split_problem(socp_data, user_options):
         else:
             count += 1
     
-    # print diagnostic (average coupling between subsystems)
+    # diagnostics (average coupling between subsystems)
     total_shared_vars = np.zeros((N))
     for i, index in enumerate(indices):
         variables = count[index]
         shared_vars = variables[variables > 1]
         total_shared_vars[i] = len(shared_vars)
-    print "average coupling:", np.mean(total_shared_vars)
-    
+    ave_coupling = np.mean(total_shared_vars)
+ 
     proxes = []
     for data, index in itertools.izip(socp_datas, indices):
         data['c'] = data['c'] / count
         if index is not None:
             # select out elements
             data['c'] = data['c'][index]
-        proxes.append( Prox(data, count, global_index = index, **user_options) )
-    
-    return ProxList(n, proxes, **user_options)
+        proxes.append(Prox(data, count, global_index=index, **user_options))
+
+    return ProxList(n, proxes, **user_options), ave_coupling

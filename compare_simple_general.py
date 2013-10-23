@@ -21,25 +21,19 @@ N = 100
 
 # tests[type] returns tuple with split method
 tests = {
-    #'naive':        ('naive', 'simple', 'ecos'),
-    #'naive':      ('naive', 'general', 'ecos'),
-    'graclus':      ('graclus', 'general', 'ecos'),
-    #'mondriaan':    ('mondriaan', 'general', 'ecos'),
-    #'random':       ('random', 'general', 'ecos'),
-    #'metis':        ('metis', 'general', 'ecos'),
-    #'laplacian':    ('laplacian', 'general', 'ecos'),
-    # 'general pdos':      ('naive', 'general', 'pdos'),
-    # 'graclus pdos':      ('graclus', 'general', 'pdos'),
-    # 'mondriaan pdos':    ('mondriaan', 'general', 'pdos'),
-    # 'random pdos':       ('random', 'general', 'pdos'),
-    # 'metis pdos':        ('metis', 'general', 'pdos'),
-    # 'laplacian pdos':    ('laplacian', 'general', 'pdos')
+    'naive':        ('naive', 'simple'),
+    'general':      ('naive', 'general'),
+    'graclus':      ('graclus', 'general'),
+    'mondriaan':    ('mondriaan', 'general'),
+    'random':       ('random', 'general'),
+    'metis':        ('metis', 'general'),
+    'laplacian':    ('laplacian', 'general')
 }
 results = {}
 
 
 for label, test_params in tests.iteritems():
-    split, consensus, solver = test_params
+    split, consensus, = test_params
     """
     __default_options = {
         'multiprocess': False,      # whether to use multiprocessing
@@ -55,14 +49,16 @@ for label, test_params in tests.iteritems():
     }
     """
     options = {'N': N, 'max iters': runs, 'rho': 2, 'multiprocess': True, 
-               'split': split, 'consensus': consensus, 'solver': solver, 'nproc': 8}
+               'split': split, 'consensus': consensus, 'solver': 'ecos', 'nproc': 8}
     results[label] = consensus_conic_opt.solve(gp.socp_vars, options)
+
 
 def objective(x):
     return gp.socp_vars['c'].dot(x)
     
 for k in tests:
     print k
+    print "  ave coupling:", results[k]['ave_coupling']
     print "  split time:", results[k]['split_time']
     print "  solve time:", results[k]['solve_time']
     print
@@ -90,7 +86,7 @@ for label in tests.keys():
     lines.append(line[0])
     pylab.ylabel('primal residual')
 
-    pylab.subplot(2,1,2)
+    pylab.subplot(2, 1, 2)
     pylab.semilogy(range(runs), res_dual, style, color=color)
     pylab.xlabel('iteration')
     pylab.ylabel('dual residual')

@@ -17,12 +17,12 @@ import random_cone_problem as gp
 # show_spy(gp.socp_vars)
 
 runs = 50
-N = 500
+N = 100
 
 # tests[type] returns tuple with split method
 tests = {
     #'naive':        ('naive', 'simple', 'ecos'),
-    'naive':      ('naive', 'general', 'ecos'),
+    #'naive':      ('naive', 'general', 'ecos'),
     'graclus':      ('graclus', 'general', 'ecos'),
     #'mondriaan':    ('mondriaan', 'general', 'ecos'),
     #'random':       ('random', 'general', 'ecos'),

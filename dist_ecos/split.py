@@ -72,6 +72,14 @@ def split_problem(socp_data, user_options):
         else:
             count += 1
     
+    # print diagnostic (average coupling between subsystems)
+    total_shared_vars = np.zeros((N))
+    for i, index in enumerate(indices):
+        variables = count[index]
+        shared_vars = variables[variables > 1]
+        total_shared_vars[i] = len(shared_vars)
+    print "average coupling:", np.mean(total_shared_vars)
+    
     proxes = []
     for data, index in itertools.izip(socp_datas, indices):
         data['c'] = data['c'] / count

@@ -116,7 +116,7 @@ class Prox(object):
             #     cvxopt.spmatrix(self.socp_vars['G'].tocoo().data, self.socp_vars['G'].tocoo().row, self.socp_vars['G'].tocoo().col),
             #     cvxopt.matrix(self.socp_vars['h']),
             #     self.socp_vars['dims'])
-            sol = ecos.solve(**self.socp_vars)
+            sol = ecos.solve(verbose=False, **self.socp_vars)
         
         #call pdos to produce the prox
         else:

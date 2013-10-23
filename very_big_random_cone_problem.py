@@ -2,13 +2,13 @@ import numpy as np
 import scipy.sparse as sp
 
 # size of each block
-block_m,block_n = 100, 20
+block_m,block_n = 1000, 30
 
 # number of blocks
-N = 100
+N = 512
 
 # sparsity density of coupling blocks
-p = 0.005/N
+p = 0.0005/N
 
 # add blocks to the diagonal
 diags = []

@@ -27,8 +27,8 @@ def partition(socp_data, N, part):
     else:
         p = 0
         
-    cone_array = np.hstack( (np.arange(p + socp_data['dims']['l'] + 1),
-                            p + socp_data['dims']['l'] + np.cumsum(socp_data['dims']['q'])))
+    cone_array = np.hstack( (np.arange(p + socp_data['dims']['l'] + 1, dtype=np.int),
+                            p + socp_data['dims']['l'] + np.cumsum(socp_data['dims']['q'], dtype=np.int)))
     # should have len(cone_array) == p + m + 1
     
     # this step performs the partition

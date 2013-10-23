@@ -1,4 +1,3 @@
-import pymetis as pm
 import networkx as nx
 import numpy as np
 import scipy.io as io

@@ -1,5 +1,6 @@
 import numpy as np
 from . split import split_problem
+import time
 
 __default_options = {
     'multiprocess': False,      # whether to use multiprocessing
@@ -25,7 +26,9 @@ def solve(socp_data, user_options = None):
         options.update(user_options)
     
     # now split the problem
+    t = time.time()
     proxes = split_problem(socp_data, options)
+    split_time = time.time() - t
     
     # if settings['show_spy']:
     #     for p in proxes:
@@ -38,6 +41,7 @@ def solve(socp_data, user_options = None):
     res_dual = []
     
     # ADMM loop
+    t = time.time()
     for i in xrange(options['max iters']):
         print '>> iter %d' % i
         
@@ -46,9 +50,10 @@ def solve(socp_data, user_options = None):
         
         res_pri.append(resids['primal'])
         res_dual.append(resids['dual'])
-        
+    solve_time = time.time() - t
 
-    result = {'res_pri': res_pri, 'res_dual': res_dual, 'sol': z[:socp_data['c'].shape[0]]}
+    result = {'res_pri': res_pri, 'res_dual': res_dual, 'sol': z[:socp_data['c'].shape[0]], 
+                'split_time': split_time, 'solve_time': solve_time}
 
     return result
     

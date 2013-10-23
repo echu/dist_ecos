@@ -10,19 +10,20 @@ settings.paths['mondriaan'] = "/Users/echu/src/Mondriaan4/tools/Mondriaan"
 # TODO: do the same for metis (so we can avoid pymetis)
 
 #'global' problem
-import dist_ecos.problems.svc as gp
+#import dist_ecos.problems.svc as gp
+import random_cone_problem as gp
 
 # print gp.socp_vars
 # show_spy(gp.socp_vars)
 
-runs = 100
-N = 32
+runs = 50
+N = 500
 
 # tests[type] returns tuple with split method
 tests = {
     #'naive':        ('naive', 'simple', 'ecos'),
-    'general':      ('naive', 'general', 'ecos'),
-    #'graclus':      ('graclus', 'general', 'ecos'),
+    'naive':      ('naive', 'general', 'ecos'),
+    'graclus':      ('graclus', 'general', 'ecos'),
     #'mondriaan':    ('mondriaan', 'general', 'ecos'),
     #'random':       ('random', 'general', 'ecos'),
     #'metis':        ('metis', 'general', 'ecos'),
@@ -53,16 +54,23 @@ for label, test_params in tests.iteritems():
         'show spy':     False       # UNUSED
     }
     """
-    options = {'N': N, 'max iters': runs, 'rho': 1, 'multiprocess': True, 
-               'split': split, 'consensus': consensus, 'solver': solver}
+    options = {'N': N, 'max iters': runs, 'rho': 2, 'multiprocess': True, 
+               'split': split, 'consensus': consensus, 'solver': solver, 'nproc': 8}
     results[label] = consensus_conic_opt.solve(gp.socp_vars, options)
 
 def objective(x):
     return gp.socp_vars['c'].dot(x)
+    
+for k in tests:
+    print k
+    print "  split time:", results[k]['split_time']
+    print "  solve time:", results[k]['solve_time']
+    print
 
-print "central objval", objective(gp.socp_sol)
+print "central objval", gp.objval #objective(gp.socp_sol)
 for k in tests:
     print k, objective(results[k]['sol'])
+
 
 import pylab
 lines = []

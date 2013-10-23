@@ -20,6 +20,7 @@ class ProxList(collections.Iterable):
         self.n = n              # number of variables
         self.proxes = proxes    # prox operators
         
+        print nproc
         if multiprocess:
             self.nproc = nproc
             self.map = Pool(processes = nproc).map

@@ -5,8 +5,8 @@ from dist_ecos import consensus_conic_opt, settings
 from dist_ecos.helpers import show_spy
 
 # set up paths to partitioners
-settings.paths['graclus'] = "/Users/echu/src/graclus1.2/graclus"
-settings.paths['mondriaan'] = "/Users/echu/src/Mondriaan4/tools/Mondriaan"
+settings.paths['graclus'] = "/Users/ajfriend/src/graclus1.2/graclus"
+settings.paths['mondriaan'] = "/Users/ajfriend/src/Mondriaan4/tools/Mondriaan"
 # TODO: do the same for metis (so we can avoid pymetis)
 
 #'global' problem
@@ -25,7 +25,7 @@ tests = {
     'graclus':      ('graclus', 'general'),
     'mondriaan':    ('mondriaan', 'general'),
     'random':       ('random', 'general'),
-    'metis':        ('metis', 'general'),
+    #'metis':        ('metis', 'general'),
     'laplacian':    ('laplacian', 'general')
 }
 results = {}

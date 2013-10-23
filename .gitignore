@@ -4,3 +4,4 @@ ltxpng/
 *.out
 *.pyc
 parsetab.py
+graclus.edgelist

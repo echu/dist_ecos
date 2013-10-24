@@ -54,9 +54,9 @@ def solve(socp_data, user_options=None):
 
     solve_time = time.time() - t
 
-    result = {  'res_pri': res_pri, 'res_dual': res_dual, 
-                'sol': z[:socp_data['c'].shape[0]], 
-                'split_time': split_time, 'solve_time': solve_time,
-                'ave_coupling': ave_coupling }
+    result = {'res_pri': res_pri, 'res_dual': res_dual,
+              'sol': z[:socp_data['c'].shape[0]],
+              'split_time': split_time, 'solve_time': solve_time,
+              'ave_coupling': ave_coupling}
 
     return result

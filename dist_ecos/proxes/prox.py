@@ -118,41 +118,41 @@ class Prox(object):
             #     cvxopt.matrix(self.socp_vars['h']),
             #     self.socp_vars['dims'])
             sol = ecos.solve(verbose=False, **self.socp_vars)
-        
-        #call pdos to produce the prox
+
+        # call pdos to produce the prox
         else:
             # opts = {'MAX_ITERS': 500, 'NORMALIZE': True, 'ALPHA': 1.8, 'EPS_ABS': 1e-8,'VERBOSE': False}
             # c = cvxopt.matrix(self.socp_vars['c'])
             # dims = self.socp_vars['dims']
-            # 
+            #
             # if self.socp_vars['b'] is not None:
             #     b = cvxopt.matrix([
-            #         cvxopt.matrix(self.socp_vars['b']), 
+            #         cvxopt.matrix(self.socp_vars['b']),
             #         cvxopt.matrix(self.socp_vars['h'])
             #     ])
             #     dims['f'] = self.socp_vars['b'].size
             # else:
             #     b = cvxopt.matrix(self.socp_vars['h'])
             #     dims['f'] = 0
-            #         
+            #
             # if self.socp_vars['A'] is not None:
             #     Acoo = self.socp_vars['A'].tocoo()
             #     Gcoo = self.socp_vars['G'].tocoo()
             #     m = Acoo.shape[0]
             #     A = cvxopt.spmatrix(
-            #         cvxopt.matrix([cvxopt.matrix(Acoo.data), cvxopt.matrix(Gcoo.data)]), 
-            #         cvxopt.matrix([cvxopt.matrix(Acoo.row), cvxopt.matrix(Gcoo.row+m)]), 
+            #         cvxopt.matrix([cvxopt.matrix(Acoo.data), cvxopt.matrix(Gcoo.data)]),
+            #         cvxopt.matrix([cvxopt.matrix(Acoo.row), cvxopt.matrix(Gcoo.row+m)]),
             #         cvxopt.matrix([cvxopt.matrix(Acoo.col), cvxopt.matrix(Gcoo.col)])
             #     )
             # else:
             #     Gcoo = self.socp_vars['G'].tocoo()
             #     A = cvxopt.spmatrix(Gcoo.data, Gcoo.row, Gcoo.col)
-            #         
+            #
             # if hasattr(self, 'x0') and hasattr(self, 'y0') and hasattr(self, 's0'):
             #     sol = pdos_direct.solve(c,A,b,dims, opts, self.x0, self.y0, self.s0)
             # else:
             #     sol = pdos_direct.solve(c,A,b,dims, opts)
-            #         
+            #
             # self.x0 = sol['x']
             # self.y0 = sol['y']
             # self.s0 = sol['s']

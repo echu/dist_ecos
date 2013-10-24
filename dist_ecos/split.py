@@ -27,9 +27,10 @@ def partition(socp_data, N, part):
         p = socp_data['A'].shape[0]
     else:
         p = 0
-        
-    cone_array = np.hstack( (np.arange(p + socp_data['dims']['l'] + 1, dtype=np.int),
-                            p + socp_data['dims']['l'] + np.cumsum(socp_data['dims']['q'], dtype=np.int)))
+
+    cone_array = np.hstack(
+        (np.arange(p + socp_data['dims']['l'] + 1, dtype=np.int),
+         p + socp_data['dims']['l'] + np.cumsum(socp_data['dims']['q'], dtype=np.int)))
     # should have len(cone_array) == p + m + 1
 
     # this step performs the partition
@@ -71,7 +72,7 @@ def split_problem(socp_data, user_options):
             count[index] += 1
         else:
             count += 1
-    
+
     # diagnostics (average coupling between subsystems)
     total_shared_vars = np.zeros((N))
     for i, index in enumerate(indices):
@@ -79,7 +80,7 @@ def split_problem(socp_data, user_options):
         shared_vars = variables[variables > 1]
         total_shared_vars[i] = len(shared_vars)
     ave_coupling = np.mean(total_shared_vars)
- 
+
     proxes = []
     for data, index in itertools.izip(socp_datas, indices):
         data['c'] = data['c'] / count

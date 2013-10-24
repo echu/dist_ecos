@@ -48,14 +48,14 @@ for label, test_params in tests.iteritems():
         'show spy':     False       # UNUSED
     }
     """
-    options = {'N': N, 'max iters': runs, 'rho': 2, 'multiprocess': True, 
+    options = {'N': N, 'max iters': runs, 'rho': 2, 'multiprocess': True,
                'split': split, 'consensus': consensus, 'solver': 'ecos', 'nproc': 8}
     results[label] = consensus_conic_opt.solve(gp.socp_vars, options)
 
 
 def objective(x):
     return gp.socp_vars['c'].dot(x)
-    
+
 for k in tests:
     print k
     print "  ave coupling:", results[k]['ave_coupling']
@@ -63,7 +63,7 @@ for k in tests:
     print "  solve time:", results[k]['solve_time']
     print
 
-print "central objval", gp.objval #objective(gp.socp_sol)
+print "central objval", gp.objval  # objective(gp.socp_sol)
 for k in tests:
     print k, objective(results[k]['sol'])
 

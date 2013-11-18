@@ -23,17 +23,28 @@ deal = {
 
 
 def partition(socp_data, N, part):
+    """ Return lists that describe which rows of [A; G]
+        belong to each subsystem, and the cone information.
+
+        The first element of each of the four lists returned
+        give the  A, G, l, q socp info for the first subsystem.
+
+        part is the list output from covers, i.e., a list
+        that assigns each compressed row to a subsystem
+    """
     if socp_data['A']:
         p = socp_data['A'].shape[0]
     else:
         p = 0
 
+    # give the starting index of each cone
+    # should have len(cone_array) == p + num cones + 1
+    # +1 so we have the index where the last cone ends
     cone_array = np.hstack((
         np.arange(p + socp_data['dims']['l'] + 1, dtype=np.int),
         p + socp_data['dims']['l'] +
         np.cumsum(socp_data['dims']['q'], dtype=np.int)
         ))
-    # should have len(cone_array) == p + m + 1
 
     # this step performs the partition
     A_list_of_lists = [[] for i in xrange(N)]
@@ -63,11 +74,19 @@ def split_problem(socp_data, user_options):
     split_func = split[user_options['split']]
     deal_func = deal[user_options['consensus']]
 
+    # conver describes which subsystem each compressed row will go to
     cover = split_func(socp_data, N)
+
+    # expand conver info into socp data for each subsystem
+    # that is, indices (of global [A; G]) for the local socp problems
     cover_info = partition(socp_data, N, cover)
+
+    # form full socp data for each subsystem
+    # indices is an array of global indices touched by each subsystem
     socp_datas, indices = deal_func(socp_data, N, *cover_info)
 
-    # count subsystems
+    # count indices touched by each subsystem, so that we can properly average
+    # for consensus
     count = np.zeros((n))
     for index in indices:
         if index is not None:
@@ -85,10 +104,12 @@ def split_problem(socp_data, user_options):
 
     proxes = []
     for data, index in itertools.izip(socp_datas, indices):
+        # properly normalize c
         data['c'] = data['c'] / count
         if index is not None:
             # select out elements
             data['c'] = data['c'][index]
+        #form the actual prox objects
         proxes.append(Prox(data, count, global_index=index, **user_options))
 
     return ProxList(n, proxes, **user_options), ave_coupling

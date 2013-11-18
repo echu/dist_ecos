@@ -1,4 +1,8 @@
 def deal(socp_data, N, A_ind, G_ind, linear, soc):
+    """ take local subsystem index information and deal it out
+        local socp data consisting of full numpy arrays
+    """
+
     socp_datas = []
     indices = []
     for i in xrange(N):

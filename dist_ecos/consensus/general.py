@@ -4,6 +4,10 @@ import scipy.sparse as sp
 
 
 def squish(A, G):
+    """ reduce a local A, G sparse system to just the
+        variables with nonzero elements. return the mapping
+        back to the global index
+    """
     if A is not None:
         A = A.tocoo()
         p, n = A.shape
@@ -34,6 +38,11 @@ def squish(A, G):
 
 
 def deal(socp_data, N, A_ind, G_ind, linear, soc):
+    """ take local subsystem index information and deal it out
+        local socp data consisting of full numpy arrays.
+        numpy arrays are reduced to just the variables that they touch
+        QUESTION: What about c?
+    """
     socp_datas = []
     indices = []
     for i in xrange(N):
@@ -61,4 +70,5 @@ def deal(socp_data, N, A_ind, G_ind, linear, soc):
         local_socp_data['dims'] = {'l': linear[i], 'q': soc[i], 's': []}
         indices.append(index)     # global index
         socp_datas.append(local_socp_data)
+        # we leave c alone?
     return socp_datas, indices

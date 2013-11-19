@@ -5,10 +5,10 @@ import scipy.sparse as sp
 block_m, block_n = 100, 20
 
 # number of blocks
-N = 100
+N = 10
 
 # sparsity density of coupling blocks
-p = 0.005 / N
+p = 0.01 #0.005 / N
 
 # add blocks to the diagonal
 diags = []

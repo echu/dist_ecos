@@ -10,35 +10,36 @@ settings.paths['mondriaan'] = "/Users/ajfriend/src/Mondriaan4/tools/Mondriaan"
 # TODO: do the same for metis (so we can avoid pymetis)
 
 #'global' problem
-#import dist_ecos.problems.svc as gp
-import random_cone_problem as gp
+import dist_ecos.problems.svc as gp
+#import random_cone_problem as gp
 
 # print gp.socp_vars
 # show_spy(gp.socp_vars)
 
-runs = 50
-N = 100
+runs = 300
+N = 2
 
 # tests[type] returns tuple with split method
 tests = {
-    'naive':        ('naive', 'simple'),
-    'general':      ('naive', 'general'),
-    'graclus':      ('graclus', 'general'),
-    'mondriaan':    ('mondriaan', 'general'),
-    'random':       ('random', 'general'),
+    'primal':        ('naive', 'general', 'primal'),
+    'intersect':        ('naive', 'general', 'intersect')
+#    'general':      ('naive', 'general'),
+#    'graclus':      ('graclus', 'general'),
+#    'mondriaan':    ('mondriaan', 'general'),
+#    'random':       ('random', 'general'),
     #'metis':        ('metis', 'general'),
-    'laplacian':    ('laplacian', 'general')
+#   'laplacian':    ('laplacian', 'general')
 }
 results = {}
 
 
 for label, test_params in tests.iteritems():
-    split, consensus, = test_params
+    split, consensus, form = test_params
     """
     __default_options = {
         'multiprocess': False,      # whether to use multiprocessing
         'nproc':        4,          # number of processes to use if multiprocess
-        'problem':      'primal',   # problem form to solve (UNUSED)
+        'form':      'primal',   # problem form to solve 
         'consensus':    'simple',   # consensus method to use (simple or general)
         'split':        'naive',    # partition method
         'solver':       'ecos',     # solver to use
@@ -49,7 +50,7 @@ for label, test_params in tests.iteritems():
     }
     """
     options = {'N': N, 'max iters': runs, 'rho': 2, 'multiprocess': True,
-               'split': split, 'consensus': consensus, 'solver': 'ecos', 'nproc': 8}
+               'split': split, 'consensus': consensus, 'solver': 'ecos', 'nproc': 8, 'form': form}
     results[label] = consensus_conic_opt.solve(gp.socp_vars, options)
 
 
@@ -63,9 +64,10 @@ for k in tests:
     print "  solve time:", results[k]['solve_time']
     print
 
-print "central objval", gp.objval  # objective(gp.socp_sol)
-for k in tests:
-    print k, objective(results[k]['sol'])
+# if hasattr(gp, 'objval'):
+#     print "central objval", gp.objval  # objective(gp.socp_sol)
+# for k in tests:
+#     print k, objective(results[k]['sol'])
 
 
 import pylab

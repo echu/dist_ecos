@@ -39,6 +39,3 @@ def convert(socp_data):
 
     return R, s, cone_array, True
 
-# ajf 9/26/13:  do we want to return a function to recover the original socp
-# solution from the stuffed intersection form?
-# echu: yeah, probably.

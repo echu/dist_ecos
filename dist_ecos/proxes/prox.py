@@ -57,7 +57,7 @@ def add_quad_regularization(rho, c, G, h, dims, A, b):
 
     if A is not None:
         p = A.shape[0]
-        A = sp.hstack((A, sp.coo_matrix(None, shape=(p, n + 1))))
+        A = sp.hstack((A, sp.coo_matrix(None, shape=(p, 1))))
 
     if h is not None:
         h = np.hstack((h, np.zeros((n + 2))))
@@ -92,6 +92,7 @@ class Prox(object):
         rho_vec[private_vars] = 1e-3   # small regularization on private vars
 
         self.rho = rho_vec
+
         # now, add quadratic regularization manually to the problem
         self.socp_vars = add_quad_regularization(rho_vec, **socp_vars)
         self.solver = solver
@@ -105,7 +106,6 @@ class Prox(object):
             return np.empty(0)
 
         self.socp_vars['h'][-self.n:] = -2 * self.rho * v
-
         if self.solver == "ecos":
             sol = ecos.solve(verbose=False, **self.socp_vars)
         else:

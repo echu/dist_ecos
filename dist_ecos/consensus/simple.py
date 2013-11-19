@@ -10,14 +10,14 @@ def deal(socp_data, N, A_ind, G_ind, linear, soc):
         # A_ind[i] indexes into A, G_ind[i] indexes into G
 
         # if equality constraints exist and the group has elements
-        if socp_data['A'] and A_ind[i]:
+        if socp_data['A'] is not None and A_ind[i]:
             local_socp_data['A'] = socp_data['A'][A_ind[i], :]
             local_socp_data['b'] = socp_data['b'][A_ind[i]]
         else:
             local_socp_data['A'] = None
             local_socp_data['b'] = None
 
-        if G_ind[i]:
+        if G_ind[i] is not None:
             local_socp_data['G'] = socp_data['G'][G_ind[i], :]
             local_socp_data['h'] = socp_data['h'][G_ind[i]]
         else:

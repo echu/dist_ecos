@@ -32,7 +32,7 @@ def partition(socp_data, N, part):
         part is the list output from covers, i.e., a list
         that assigns each compressed row to a subsystem
     """
-    if socp_data['A']:
+    if socp_data['A'] is not None:
         p = socp_data['A'].shape[0]
     else:
         p = 0

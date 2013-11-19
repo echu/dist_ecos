@@ -14,6 +14,8 @@ import scipy.sparse as sp
 # a function to recover the x from the solution to this larger system
 # assume c has the right size (is not None)
 
+# csr form
+
 
 def convert(socp_data):
     """ stuff matrices for the intersection form.
@@ -25,6 +27,7 @@ def convert(socp_data):
     b = socp_data['b']
     G = socp_data['G']
     h = socp_data['h']
+    dims = socp_data['dims']
 
     #newA
     rows = []
@@ -33,7 +36,7 @@ def convert(socp_data):
         rows.append([A, None] + ([] if G is None else [None]))
     rows.append([None] + [x.T for x in [A, G] if x is not None])
 
-    newA = sp.bmat(rows)
+    newA = sp.bmat(rows, format='csr')
 
     #newb
     newb = np.hstack([x for x in [0, b, -c] if x is not None])
@@ -50,14 +53,24 @@ def convert(socp_data):
         rows = []
         rows.append([G] + Aspace + [None])
         rows.append([None] + Aspace + [-1*sp.eye(p)])
-        newG = sp.bmat(rows)
+        newG = sp.bmat(rows, format='csr')
+
+        lin = dims['l']
+        quad = sum(dims['q'])
+        rows = [newG[:lin,:], newG[lin+quad:lin+quad+lin,:], newG[lin:lin+quad,:], newG[lin+quad+lin:,:] ]
+
+        newG = sp.vstack(rows, format='csr')
 
         #newh
         newh = np.hstack([h, np.zeros(p)])
 
+        #newdims
+        newdims = {'l': lin + lin, 'q': dims['q']+dims['q']}
+
     else:
         newG = None
         newh = None
+        newdims = {'l': 0, 'q': []}
 
     #newc should be zero
     newc = np.hstack([np.zeros_like(c)] + [np.zeros(x.shape[0]) for x in [A, G] if x is not None])
@@ -66,11 +79,15 @@ def convert(socp_data):
                      'b': newb,
                      'G': newG,
                      'h': newh,
-                     'c': newc
+                     'c': newc,
+                     'dims': newdims
                      }
 
     n = newc.shape[0]  # length of the newc
     p = c.shape[0]  # length of the part of x we want to recover
+
+    print newA.shape
+    print newG.shape
 
     def recover(x):
         if np.rank(x) != 1:

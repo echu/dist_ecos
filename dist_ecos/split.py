@@ -51,14 +51,15 @@ def partition(socp_data, N, part):
     G_list_of_lists = [[] for i in xrange(N)]
     linear_cones = [0 for i in xrange(N)]
     soc_cones = [[] for i in xrange(N)]
+    
     for i, group in enumerate(part):
         if i < p:
             A_list_of_lists[group].append(i)
         else:
-            ind = i - p
-            start = cone_array[ind]
-            end = cone_array[ind + 1]
-            G_list_of_lists[group].extend(range(start, end))
+            start = cone_array[i]
+            end = cone_array[i + 1]
+            # remove "p" since G does not include equality constraints
+            G_list_of_lists[group].extend(range(start - p, end - p))
             if end - start == 1:
                 linear_cones[group] += 1
             else:

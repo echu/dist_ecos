@@ -44,29 +44,43 @@ def convert(socp_data):
     #newG
     if G is not None:
         p, q = G.shape
-        if A is None:
-            Aspace = []
-        else:
-            m, n = A.shape
-            Aspace = [sp.csr_matrix((p, m))]
-
-        rows = []
-        rows.append([G] + Aspace + [None])
-        rows.append([None] + Aspace + [-1*sp.eye(p)])
-        newG = sp.bmat(rows, format='csr')
-
         lin = dims['l']
         quad = sum(dims['q'])
-        rows = [newG[:lin,:], newG[lin+quad:lin+quad+lin,:], newG[lin:lin+quad,:], newG[lin+quad+lin:,:] ]
+        if A is None:
+            Alinspace = []
+            Aquadspace = []
+        else:
+            m, n = A.shape
+            Alinspace = [sp.csr_matrix((lin, m))]
+            Aquadspace = [sp.csr_matrix((quad, m))]
 
-        newG = sp.vstack(rows, format='csr')
+        rows = []
+        if lin > 0 :
+            Glin = G[:lin, :]
+            hlin = h[:lin]
+            rows.append([Glin] + Alinspace + [None])
+            rows.append([None] + Alinspace + [-1*sp.eye(lin, p, k=0)])
+        else:
+            hlin = np.empty(0)
+        
+        if quad > 0:
+            Gquad = G[lin:lin+quad,:]
+            hquad = h[lin:lin+quad]
+            rows.append([Gquad] + Aquadspace + [None])
+            rows.append([None] + Aquadspace + [-1*sp.eye(quad, p, k=lin)])
+        else:
+            hquad = np.empty(0)
+        
+        #newG
+        newG = sp.bmat(rows, format='csc')
 
         #newh
-        newh = np.hstack([h, np.zeros(p)])
+        newh = np.hstack([hlin, np.zeros(lin), hquad, np.zeros(quad)])
 
         #newdims
         newdims = {'l': lin + lin, 'q': dims['q']+dims['q']}
-
+        
+        
     else:
         newG = None
         newh = None
@@ -86,16 +100,13 @@ def convert(socp_data):
     n = newc.shape[0]  # length of the newc
     p = c.shape[0]  # length of the part of x we want to recover
 
-    print newA.shape
-    print newG.shape
-
     def recover(x):
         if np.rank(x) != 1:
             raise Exception("x should be a 1D vector.")
         if x.shape[0] != n:
             raise Exception("x has the wrong length.")
 
-        return x[:n]
+        return x[:p]
 
     #recovery function
 

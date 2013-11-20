@@ -11,10 +11,10 @@ def squish(A, G):
     if A is not None:
         A = A.tocoo()
         p, n = A.shape
-        Acol = A.col
+        Acol, Annz = A.col, A.nnz
     else:
         p = 0
-        Acol = np.empty(0)
+        Acol, Annz = np.empty(0), 0
 
     if G is not None:
         G = G.tocoo()
@@ -29,10 +29,10 @@ def squish(A, G):
 
     if A is not None:
         A = sp.coo_matrix(
-            (A.data, (A.row, cols)), shape=(p, len(global_index)))
+            (A.data, (A.row, cols[:Annz])), shape=(p, len(global_index)))
     if G is not None:
         G = sp.coo_matrix(
-            (G.data, (G.row, cols)), shape=(m, len(global_index)))
+            (G.data, (G.row, cols[Annz:])), shape=(m, len(global_index)))
 
     return A, G, np.array(global_index, dtype=np.int)
 

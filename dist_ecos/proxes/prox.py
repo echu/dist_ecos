@@ -79,7 +79,6 @@ class Prox(object):
         '''
 
         rho is the admm parameter'''
-
         self.n = socp_vars['c'].shape[0]
         if global_index is not None:
             self.global_index = global_index

@@ -43,6 +43,8 @@ socp_sol = ecos_sol['x']
 prob_sol_a = p.socp2prob(ecos_sol['x'])['a']
 prob_sol_b = p.socp2prob(ecos_sol['x'])['b']
 
+objval = ecos_sol['info']['pcost']
+
 if __name__ == '__main__':
     # maybe add some viz code here
     print socp_vars

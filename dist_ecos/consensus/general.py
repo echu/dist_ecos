@@ -41,7 +41,6 @@ def deal(socp_data, N, A_ind, G_ind, linear, soc):
     """ take local subsystem index information and deal it out
         local socp data consisting of full numpy arrays.
         numpy arrays are reduced to just the variables that they touch
-        QUESTION: What about c?
     """
     socp_datas = []
     indices = []

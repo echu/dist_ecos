@@ -1,4 +1,6 @@
 from multiprocessing import Process, JoinableQueue, Queue
+#TODO: I think there's a race condition concerning the queues.
+#programs with fast proxes and many iterations have a chance of stalling...
 
 
 class StatefulMapper(object):
@@ -18,13 +20,11 @@ class StatefulMapper(object):
         from each process.
 
     """
-    def __init__(self, obj_list, kind="parallel"):
-        if kind == "parallel":
+    def __init__(self, obj_list, parallel=True):
+        if parallel:
             self.list = ParallelList(obj_list)
-        elif kind == "serial":
-            self.list = SerialList(obj_list)
         else:
-            raise Exception("'kind' parameter must be 'serial' or 'parallel'.")
+            self.list = SerialList(obj_list)
 
     def map(self, func, *args, **kwargs):
         """

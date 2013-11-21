@@ -5,10 +5,10 @@ import scipy.sparse as sp
 block_m, block_n = 100, 20
 
 # number of blocks
-N = 10
+N = 100
 
 # sparsity density of coupling blocks
-p = 0.01 #0.005 / N
+p = 0.005 / N
 
 # add blocks to the diagonal
 diags = []
@@ -35,8 +35,20 @@ x = np.random.randn((n))
 
 # generate a vector which will be used to create the complementary "s" and "y"
 tmp = np.random.randn((m))
+
 y = np.maximum(tmp, 0)
 s = np.maximum(-tmp, 0)
+
+# v = tmp[1:]
+# t = tmp[0]
+# if np.linalg.norm(v) <= -t:
+#     y = np.zeros((m))
+# elif np.linalg.norm(v) <= t:
+#     y = tmp
+# else:
+#     alpha = (0.5)*(np.linalg.norm(v) + t)
+#     y = np.hstack((alpha, alpha*v/np.linalg.norm(v)))
+# s = y - tmp
 
 # now, s and y are complementary primal-dual pair
 

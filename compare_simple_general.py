@@ -5,8 +5,8 @@ from dist_ecos import consensus_conic_opt, settings
 from dist_ecos.helpers import show_spy
 
 # set up paths to partitioners
-settings.paths['graclus'] = "/Users/ajfriend/src/graclus1.2/graclus"
-settings.paths['mondriaan'] = "/Users/ajfriend/src/Mondriaan4/tools/Mondriaan"
+settings.paths['graclus'] = "/Users/echu/src/graclus1.2/graclus"
+settings.paths['mondriaan'] = "/Users/echu/src/Mondriaan4/tools/Mondriaan"
 # TODO: do the same for metis (so we can avoid pymetis)
 
 #'global' problem
@@ -16,14 +16,17 @@ import dist_ecos.problems.svc as gp
 # print gp.socp_vars
 # show_spy(gp.socp_vars)
 
-runs = 300
-N = 2
+runs = 1000
+N = 100
 
 # tests[type] returns tuple with split method
 tests = {
     'primal':        ('naive', 'general', 'primal'),
-    'intersect':        ('naive', 'general', 'intersect')
-#    'general':      ('naive', 'general'),
+    'intersect':     ('naive', 'general', 'intersect'),
+    'grac_pri':       ('graclus', 'general', 'primal'),
+    'grac_int':       ('graclus', 'general', 'intersect'),
+#    'mond_pri':       ('mondriaan', 'general', 'primal'),
+#    'mond_int':       ('mondriaan', 'general', 'intersect'),
 #    'graclus':      ('graclus', 'general'),
 #    'mondriaan':    ('mondriaan', 'general'),
 #    'random':       ('random', 'general'),
@@ -51,6 +54,15 @@ for label, test_params in tests.iteritems():
     """
     options = {'N': N, 'max iters': runs, 'rho': 2, 'multiprocess': True,
                'split': split, 'consensus': consensus, 'solver': 'ecos', 'nproc': 8, 'form': form}
+    print 72*"="
+    print """number of subsystems:   %(N)s
+maximum iterations:     %(max iters)s
+rho:                    %(rho)s
+multiprocessing?:       %(multiprocess)s
+split method:           %(split)s
+consensus type:         %(consensus)s
+problem form:           %(form)s""" % options
+    print 72*"="
     results[label] = consensus_conic_opt.solve(gp.socp_vars, options)
 
 
@@ -64,10 +76,9 @@ for k in tests:
     print "  solve time:", results[k]['solve_time']
     print
 
-# if hasattr(gp, 'objval'):
-#     print "central objval", gp.objval  # objective(gp.socp_sol)
-# for k in tests:
-#     print k, objective(results[k]['sol'])
+print "central objval", gp.objval  # objective(gp.socp_sol)
+for k in tests:
+    print k, objective(results[k]['sol'])
 
 
 import pylab

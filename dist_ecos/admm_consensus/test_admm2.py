@@ -33,13 +33,14 @@ class equiv(object):
 local_var_list = map(np.array,[[0,1,2,3,4],[5,6,7,8,9],[0,1,2,3,4,10,11,12,13,14],[5,6,7,8,9,15,16,17,18,19],[10,11,12,13,14,15,16,17,18,19]])
 proxes = [vec_prox(), ball_proj(), equiv(), equiv(), equiv()]
 
-result = solve(proxes, local_var_list,parallel=False,max_iters=1000,rho=rho)
+result = solve(proxes, local_var_list,parallel=True,max_iters=1000,rho=rho)
 
 print result['sol']
 
 pri = result['res_pri']
 dual = result['res_dual']
 pylab.semilogy(range(len(pri)), pri, range(len(dual)), dual)
+pylab.legend(['primal','dual'])
 pylab.show()
 
 print -1.0*c/np.linalg.norm(c)

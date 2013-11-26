@@ -41,34 +41,35 @@ class AdmmAgent(object):
         self.n = len(local_vars)
         self.x = np.zeros((self.n))
         self.u = np.zeros((self.n))
-        self.zold = np.zeros((self.n))
 
-    def update(self, z):
+    def prox(self, z):
         """ compute admm update, which involves the prox function
-            update admm state information
-            return result of prox and residual information
         """
-        z = z[self.local_vars]
-        offset = self.x - z
-        self.u += offset
-
-        #fix residual computation
-        dual = (np.linalg.norm(self.rho * (z - self.zold)) ** 2)
-        self.zold = z
 
         #TODO: should update this later with correct rho info
+        z = z[self.local_vars]
         self.x = self.prox_obj.prox(z - self.u)
 
-        result = {'primal': np.linalg.norm(offset) ** 2,
-                  'dual': dual,
-                  'x': self.x,
+        result = {'x': self.x,
                   'index': self.local_vars}
 
         return result
 
+    def update_dual(self, z, zold):
+        z = z[self.local_vars]
+        zold = zold[self.local_vars]
 
-def xupdate(agent, z):
-    return agent.update(z)
+        offset = self.x - z
+        self.u += offset
+
+        primal_term = np.linalg.norm(offset)**2
+        #in general, rho should be a vector here
+        dual_term = np.linalg.norm(self.rho*(z - zold))**2
+
+        return {'primal': primal_term, 'dual': dual_term}
+
+    def reset_dual(self):
+        self.u = np.zeros((self.n))
 
 
 class AgentList(object):
@@ -78,7 +79,6 @@ class AgentList(object):
         self.agents = [AdmmAgent(prox, local_vars, rho) for prox, local_vars in izip(prox_list, local_var_list)]
         #wraps admmAgent with a process to perform the work in parallel
         self.agents = StatefulMapper(self.agents, parallel=parallel)
-        self.results = None
 
         #compute the var count for computing average
         self.var_count = np.zeros(self.n)
@@ -86,28 +86,33 @@ class AgentList(object):
             self.var_count[local_vars] += 1
 
     def update(self, z):
-        self.results = self.agents.map(xupdate, z)
+        # admm step of prox(z-u) with whatever eacy subsystem's current u is
+        results = self.agents.map(AdmmAgent.prox, z)
 
-    def reduce(self):
-        z_total = np.zeros(self.n)
-        pri_resid, dual_resid = 0.0, 0.0
-        if self.results is not None:
-            for result in self.results:
-                pri_resid += result['primal']
-                dual_resid += result['dual']
-                z_total[result['index']] += result['x']
+        zold = z
+        z = np.zeros(self.n)
+        for result in results:
+            z[result['index']] += result['x']
 
-            z = z_total/self.var_count
-            resids = {'primal': math.sqrt(pri_resid),
-                      'dual': math.sqrt(dual_resid)}
-            return z, resids
-        else:
-            raise Exception("Need results to reduce on!")
+        z = z/self.var_count
+
+        results = self.agents.map(AdmmAgent.update_dual, z, zold)
+
+        pri, dual = 0.0, 0.0
+        for result in results:
+            pri += result['primal']
+            dual += result['dual']
+
+        return z, math.sqrt(pri), math.sqrt(dual)
+
+    def reset(self):
+        self.agents.map(AdmmAgent.reset_dual)
 
     def close(self):
         self.agents.close()
 
-def solve(prox_list, local_var_list, parallel=True, max_iters=100, rho=1, restart=False):
+
+def solve(prox_list, local_var_list, parallel=True, max_iters=100, rho=1, restart=False, backtrack=False, x0=[]):
     #NOTE! right now, rho doesn't do anything but scale the residuals
     #i'm still using old proxes here, which are just prox(x0). we need to switch to
     #prox(x0,rho_vec)
@@ -126,7 +131,11 @@ def solve(prox_list, local_var_list, parallel=True, max_iters=100, rho=1, restar
     #leave the rho computation to the prox objects for now. fix this later
 
     #still need rho for the correct residual computation...
-    z = np.zeros((n))
+    if x0 == []:
+        z = np.zeros((n))
+    else:
+        z = x0
+
     res_pri = []
     res_dual = []
     zs = []
@@ -139,12 +148,29 @@ def solve(prox_list, local_var_list, parallel=True, max_iters=100, rho=1, restar
     for i in xrange(max_iters):
         print '>> iter %d' % i
 
-        agent_list.update(z)  # updates their local x and dual var
-        z, resids = agent_list.reduce()  # computes bar(z), also gives resid
+        zold = z
+        # updates their local x and dual var
+        z, pri, dual = agent_list.update(z)
+
+        if i == 0 or pri <= res_pri[-1]:
+            #then good step, update everything
+            #print 'good step'
+            pass
+        else:
+            print 'bad step'
+            #bad step, reset
+
+            if restart:
+                #reset the dual variables to zero
+                agent_list.reset()
+
+                if backtrack:
+                    #reset z to the center of the xs with the smallest variance
+                    z = zold
 
         zs.append(z)
-        res_pri.append(resids['primal'])
-        res_dual.append(resids['dual'])
+        res_pri.append(pri)
+        res_dual.append(dual)
 
     solve_time = time.time() - t
 

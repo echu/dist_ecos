@@ -128,6 +128,7 @@ if __name__ == "__main__":
     #    for vec in array_list:
     #        print vec
 
+
     # parallel code
     print "parallel code"
     array_list = [np.random.randn(n) for i in xrange(N)]

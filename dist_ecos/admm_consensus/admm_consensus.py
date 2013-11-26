@@ -29,6 +29,41 @@ from stateful_mapper import StatefulMapper
 import math
 
 
+#we define these methods of the AdmmAgent outside of the class so that
+#they can be pickled to be mapped over agents. kind of annoying, but it works
+# for now
+def prox(self, z):
+    """ compute admm update, which involves the prox function
+    """
+
+    #TODO: should update this later with correct rho info
+    z = z[self.local_vars]
+    self.x = self.prox_obj.prox(z - self.u)
+
+    result = {'x': self.x,
+              'index': self.local_vars}
+
+    return result
+
+
+def update_dual(self, z, zold):
+    z = z[self.local_vars]
+    zold = zold[self.local_vars]
+
+    offset = self.x - z
+    self.u += offset
+
+    primal_term = np.linalg.norm(offset)**2
+    #in general, rho should be a vector here
+    dual_term = np.linalg.norm(self.rho*(z - zold))**2
+
+    return {'primal': primal_term, 'dual': dual_term}
+
+
+def reset_dual(self):
+    self.u = np.zeros((self.n))
+
+
 class AdmmAgent(object):
     """ class to wrap ADMM state information around an object which computes
         a prox
@@ -40,35 +75,6 @@ class AdmmAgent(object):
         self.local_vars = local_vars
         self.n = len(local_vars)
         self.x = np.zeros((self.n))
-        self.u = np.zeros((self.n))
-
-    def prox(self, z):
-        """ compute admm update, which involves the prox function
-        """
-
-        #TODO: should update this later with correct rho info
-        z = z[self.local_vars]
-        self.x = self.prox_obj.prox(z - self.u)
-
-        result = {'x': self.x,
-                  'index': self.local_vars}
-
-        return result
-
-    def update_dual(self, z, zold):
-        z = z[self.local_vars]
-        zold = zold[self.local_vars]
-
-        offset = self.x - z
-        self.u += offset
-
-        primal_term = np.linalg.norm(offset)**2
-        #in general, rho should be a vector here
-        dual_term = np.linalg.norm(self.rho*(z - zold))**2
-
-        return {'primal': primal_term, 'dual': dual_term}
-
-    def reset_dual(self):
         self.u = np.zeros((self.n))
 
 
@@ -87,7 +93,7 @@ class AgentList(object):
 
     def update(self, z):
         # admm step of prox(z-u) with whatever eacy subsystem's current u is
-        results = self.agents.map(AdmmAgent.prox, z)
+        results = self.agents.map(prox, z)
 
         zold = z
         z = np.zeros(self.n)
@@ -96,7 +102,7 @@ class AgentList(object):
 
         z = z/self.var_count
 
-        results = self.agents.map(AdmmAgent.update_dual, z, zold)
+        results = self.agents.map(update_dual, z, zold)
 
         pri, dual = 0.0, 0.0
         for result in results:
@@ -106,7 +112,7 @@ class AgentList(object):
         return z, math.sqrt(pri), math.sqrt(dual)
 
     def reset(self):
-        self.agents.map(AdmmAgent.reset_dual)
+        self.agents.map(reset_dual)
 
     def close(self):
         self.agents.close()

@@ -62,7 +62,7 @@ proxes = [box_proj(), off_ball_proj(), equiv(), equiv(), equiv()]
 
 x0 = np.random.randn(n*4)
 
-result = solve(proxes, local_var_list, parallel=False, max_iters=100, rho=rho, restart=False, backtrack=False, x0=x0)
+result = solve(proxes, local_var_list, parallel=True, max_iters=1000, rho=rho, restart=False, backtrack=False, x0=x0)
 
 print result['sol']
 

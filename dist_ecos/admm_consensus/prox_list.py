@@ -37,8 +37,8 @@ def form_prox_list(socp_data, cone_cover, rho=1, general=True):
 
     #now we make the list of proxes
     prox_list = []
-    for socp_data in local_socp_datas:
-        prox_list.append(Prox(socp_data, global_count, global_index=global_index, rho=rho))
+    for socp_data, indx in izip(local_socp_datas, global_indices):
+        prox_list.append(Prox(socp_data, global_count, global_index=indx, rho=rho))
 
     return prox_list
 
@@ -48,17 +48,25 @@ def socp_info(socp_data, cone_rows):
         cone_rows is a list (not np.array) of the cones for this subsystem.
         these cones correspond to rows of the squished [A; G] system
 
-        return which rows to select for this subsystem of A, the
-        original (unsquished) G, along with cone dimension info
+        return which rows of A to select for this subsystem, and rows of the
+        original (un-squished) G, along with cone dimension info
 
     """
-    p = socp_data['A'].shape[0]
+    if socp_data['A'] is not None:
+        p = socp_data['A'].shape[0]
+    else:
+        p = 0
     l = socp_data['dims']['l']
     q = socp_data['dims']['q']
     A_list = []
     G_list = []
     linear_cones = 0
     soc_cones = []
+
+    print 'dims is ', socp_data['dims']
+    print 'p is ', p
+    print 'l is ', l
+    print 'q is ', q
 
     for row in sorted(cone_rows):
         if row < p:
@@ -67,7 +75,10 @@ def socp_info(socp_data, cone_rows):
             G_list.append(row-p)
             linear_cones += 1
         else:
+            print 'row is ', row
+
             soc_num = row - p - l
+            print 'soc_num is ', soc_num
             start = sum(q[:soc_num]) + l
             stop = start + q[soc_num]
             G_list.extend(range(start, stop))

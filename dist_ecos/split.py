@@ -75,7 +75,7 @@ def split_problem(socp_data, user_options):
     split_func = split[user_options['split']]
     deal_func = deal[user_options['consensus']]
 
-    # conver describes which subsystem each compressed row will go to
+    # cover describes which subsystem each compressed row will go to
     cover = split_func(socp_data, N)
 
     # expand conver info into socp data for each subsystem

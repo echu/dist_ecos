@@ -3,7 +3,14 @@ import scipy.sparse as sp
 import math
 import ecos
 
-from . prox_state import ProxState
+"""
+    code to create a prox object.
+    requires the global count of the variables so it can put zero
+    regularization on private variables
+
+    I think the c vector needs to already be properly normalized.
+    I think the socp vars are already reduced to non-zero variables
+"""
 
 
 def add_quad_regularization(rho, c, G, h, dims, A, b):
@@ -75,7 +82,7 @@ class Prox(object):
 
     '''object to hold local data to compute prox operators of sub problems'''
 
-    def __init__(self, socp_vars, global_count, global_index=None, solver='ecos', rho=1, **kwargs):
+    def __init__(self, socp_vars, global_count, global_index=None, solver='ecos', rho=1):
         '''
 
         rho is the admm parameter'''
@@ -96,8 +103,6 @@ class Prox(object):
         self.socp_vars = add_quad_regularization(rho_vec, **socp_vars)
         self.solver = solver
 
-        self.state = ProxState(self.n)
-
     def prox(self, v):
         '''computes prox_{f/rho}(v)'''
         # set the RHS of the solver
@@ -114,16 +119,3 @@ class Prox(object):
         x = np.reshape(x, (x.shape[0],))
 
         return x[:self.n]
-
-    def xupdate(self, z, prox_state):
-        # does not use "self.state" to update, since multiprocessing will
-        # lose the result anyway; must return the state after updating
-        offset = prox_state.x - z
-        prox_state.u += offset
-
-        dual = (np.linalg.norm(self.rho * (z - prox_state.zold)) ** 2)
-        prox_state.zold = z
-        info = {'primal': np.linalg.norm(offset) ** 2, 'dual': dual}
-
-        prox_state.x = self.prox(z - prox_state.u)
-        return prox_state, info

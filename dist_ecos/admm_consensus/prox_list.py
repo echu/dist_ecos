@@ -40,7 +40,7 @@ def form_prox_list(socp_data, cone_cover, rho=1, general=True):
     for socp_data, indx in izip(local_socp_datas, global_indices):
         prox_list.append(Prox(socp_data, global_count, global_index=indx, rho=rho))
 
-    return prox_list
+    return prox_list, global_indices
 
 
 def socp_info(socp_data, cone_rows):
@@ -63,11 +63,6 @@ def socp_info(socp_data, cone_rows):
     linear_cones = 0
     soc_cones = []
 
-    print 'dims is ', socp_data['dims']
-    print 'p is ', p
-    print 'l is ', l
-    print 'q is ', q
-
     for row in sorted(cone_rows):
         if row < p:
             A_list.append(row)
@@ -75,10 +70,7 @@ def socp_info(socp_data, cone_rows):
             G_list.append(row-p)
             linear_cones += 1
         else:
-            print 'row is ', row
-
             soc_num = row - p - l
-            print 'soc_num is ', soc_num
             start = sum(q[:soc_num]) + l
             stop = start + q[soc_num]
             G_list.extend(range(start, stop))

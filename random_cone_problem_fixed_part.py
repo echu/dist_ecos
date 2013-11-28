@@ -159,3 +159,25 @@ print "num blocks:      ", N
 print 72*"="
 
 partition = lin_part + quad_part
+
+
+#compress partition from rows into 'cones'
+def compress_list(partition, p, l, q):
+    cones = []
+    for i in range(p + l):
+        cones.append(partition[i])
+    row = p+l
+    for i in q:
+        cones.append(partition[row])
+        row += q[i]
+    return cones
+
+partition = compress_list(partition, 0, l, q)
+
+#get a list of cones for each subsystem
+from collections import defaultdict
+partition_list = defaultdict(list)
+for row, subsystem in enumerate(partition):
+    partition_list[subsystem].append(row)
+
+partition_list = list(partition_list.itervalues())

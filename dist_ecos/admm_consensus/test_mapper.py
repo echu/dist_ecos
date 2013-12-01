@@ -1,5 +1,5 @@
 #test_mapper.py
-from stateful_mapper2 import StatefulMapper
+from stateful_mapper import StatefulMapper
 
 
 class Display(object):

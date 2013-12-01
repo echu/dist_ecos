@@ -25,7 +25,7 @@
 import numpy as np
 import time
 from itertools import izip
-from stateful_mapper2 import StatefulMapper
+from stateful_mapper import StatefulMapper
 import math
 
 

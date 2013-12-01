@@ -26,7 +26,7 @@ b = ball_proj()
 
 local_var_list = [np.arange(n), np.arange(n)]
 
-result = solve([a, b], local_var_list,parallel=False,max_iters=100,rho=rho)
+result = solve([a, b], local_var_list,parallel=True,max_iters=10000,rho=rho)
 
 print result['sol']
 

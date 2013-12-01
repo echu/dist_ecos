@@ -1,4 +1,4 @@
-from multiprocessing import Process, JoinableQueue, Queue
+from multiprocessing import Process, Pipe
 #TODO: I think there's a race condition concerning the queues.
 #programs with fast proxes and many iterations have a chance of stalling...
 
@@ -41,57 +41,50 @@ class StatefulMapper(object):
 
 
 class ProcWrapper(Process):
-    def __init__(self, obj, inbox, outbox):
+    def __init__(self, obj, conn):
         super(ProcWrapper, self).__init__()
-        self.inbox = inbox
-        self.outbox = outbox
+        self.conn = conn
         self.obj = obj
 
     def run(self):
         while True:
-            msg = self.inbox.get(True)
+            msg = self.conn.recv()
 
             if msg is None:
                 #end the process
-
                 break
 
             func, args, kwargs = msg
             result = func(self.obj, *args, **kwargs)
-            self.outbox.put(result)
-            self.inbox.task_done()
-
-            #wait for all others to complete before you try to take again
-            self.inbox.join()
+            self.conn.send(result)
 
 
 class ParallelList(object):
     def __init__(self, obj_list):
-        self.inbox = JoinableQueue()
-        self.outbox = Queue()
+
         self.wrappers = []
+        self.conns = []
         for obj in obj_list:
-            wrapper = ProcWrapper(obj, self.inbox, self.outbox)
+            conn1, conn2 = Pipe()
+            wrapper = ProcWrapper(obj, conn2)
             self.wrappers.append(wrapper)
+            self.conns.append(conn1)
             wrapper.start()
 
     def map(self, func, *args, **kwargs):
         result = []
-        self.inbox.join()
+        for conn in self.conns:
+            conn.send((func, args, kwargs))
 
-        for x in self.wrappers:
-            self.inbox.put((func, args, kwargs))
+        for conn in self.conns:
+            result.append(conn.recv())
 
-        self.inbox.join()  # wait for each process to finish computation
-
-        for x in self.wrappers:
-            result.append(self.outbox.get())
         return result
 
     def close(self):
         #send poison pill
-        for x in self.wrappers:
-            self.inbox.put(None)
+        for conn in self.conns:
+            conn.send(None)
 
         for x in self.wrappers:
             x.join()
@@ -131,7 +124,6 @@ if __name__ == "__main__":
     #
     #    for vec in array_list:
     #        print vec
-
 
     # parallel code
     print "parallel code"

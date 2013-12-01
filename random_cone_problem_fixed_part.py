@@ -62,7 +62,7 @@ def random_cones(m):
     return (l, q)
 
 # size of each block
-block_m, block_n, block_p = 2000, 600, 0.1
+block_m, block_n, block_p = 200, 60, 0.3
 
 # print "average nnz per row", block_m * block_n * block_p / block_m
 
@@ -121,7 +121,7 @@ m, n = A.shape
 
 # create sparse coupling
 # sparsity density of coupling blocks
-p = 50.0 / n # average of 50 nnz per row 
+p = 10.0 / n # average of 50 nnz per row 
 Acouple = sprandn(m,n,p)
 
 # add the two

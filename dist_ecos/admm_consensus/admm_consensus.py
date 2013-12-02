@@ -163,9 +163,8 @@ def solve(prox_list, local_var_list, parallel=True, max_iters=100, rho=1, restar
             #print 'good step'
             pass
         else:
-            print 'bad step'
+            #print 'bad step'
             #bad step, reset
-
             if restart:
                 #reset the dual variables to zero
                 agent_list.reset()

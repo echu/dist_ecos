@@ -37,11 +37,14 @@ def prox(self, z):
     """
 
     #TODO: should update this later with correct rho info
+    t = time.time()
     z = z[self.local_vars]
     self.x = self.prox_obj.prox(z - self.u)
+    prox_time = time.time() - t
 
     result = {'x': self.x,
-              'index': self.local_vars}
+              'index': self.local_vars,
+              'time': prox_time}
 
     return result
 
@@ -94,11 +97,13 @@ class AgentList(object):
     def update(self, z):
         # admm step of prox(z-u) with whatever eacy subsystem's current u is
         results = self.agents.map(prox, z)
+        times = []
 
         zold = z
         z = np.zeros(self.n)
         for result in results:
             z[result['index']] += result['x']
+            times.append(result['time'])
 
         z = z/self.var_count
 
@@ -109,7 +114,7 @@ class AgentList(object):
             pri += result['primal']
             dual += result['dual']
 
-        return z, math.sqrt(pri), math.sqrt(dual)
+        return z, math.sqrt(pri), math.sqrt(dual), times
 
     def reset(self):
         self.agents.map(reset_dual)
@@ -133,6 +138,7 @@ def solve(prox_list, local_var_list, parallel=True, max_iters=100, rho=1, restar
     n = len(all_vars)  # size of the global variable
     if not np.all(all_vars == np.arange(n)):
         raise Exception("The local to global map doesn't add up correctly.")
+    N = len(prox_list)
 
     #leave the rho computation to the prox objects for now. fix this later
 
@@ -146,6 +152,8 @@ def solve(prox_list, local_var_list, parallel=True, max_iters=100, rho=1, restar
     res_dual = []
     zs = []
 
+    prox_times = [[] for i in range(N)]
+
     #initialize each admm agent
     agent_list = AgentList(prox_list, local_var_list, rho, parallel, n)
 
@@ -156,7 +164,10 @@ def solve(prox_list, local_var_list, parallel=True, max_iters=100, rho=1, restar
 
         zold = z
         # updates their local x and dual var
-        z, pri, dual = agent_list.update(z)
+        z, pri, dual, prox_step_time = agent_list.update(z)
+
+        for j, subsystem_time in enumerate(prox_step_time):
+            prox_times[j].append(subsystem_time)
 
         if i == 0 or pri <= res_pri[-1]:
             #then good step, update everything
@@ -179,6 +190,8 @@ def solve(prox_list, local_var_list, parallel=True, max_iters=100, rho=1, restar
 
     solve_time = time.time() - t
 
+    subsystem_stats = [(min(x), max(x)) for x in prox_times]
+
     #close the agent list
     agent_list.close()
 
@@ -186,6 +199,7 @@ def solve(prox_list, local_var_list, parallel=True, max_iters=100, rho=1, restar
               'res_dual': res_dual,
               'sol': z,
               'z_list': zs,
-              'solve_time': solve_time}
+              'solve_time': solve_time,
+              'subsystem_stats': subsystem_stats}
 
     return result

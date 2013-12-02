@@ -11,7 +11,7 @@ t = time.time()
 prox_list, global_indices = form_prox_list(gp.socp_vars, gp.partition_list)
 split_time = time.time() - t
 
-result = solve(prox_list, global_indices, parallel=True, max_iters=300, rho=.1)
+result = solve(prox_list, global_indices, parallel=True, max_iters=50, rho=.1)
 
 pri = result['res_pri']
 dual = result['res_dual']
@@ -22,3 +22,7 @@ pylab.show()
 
 print 'split time: ', split_time
 print 'solve time: ', result['solve_time']
+
+print 'subsystem times'
+for x in result['subsystem_stats']:
+    print 'subsystem: ', x

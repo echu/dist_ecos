@@ -4,16 +4,16 @@ import scipy.sparse as sp
 #problem parameters
 
 # size of each block
-block_m, block_n, block_p = 200, 60, 0.3
+block_m, block_n, block_p = 1800, 460, 0.01
 
 # print "average nnz per row", block_m * block_n * block_p / block_m
 
 # number of blocks
 N = 2
-p_coupling = 0.1  # expected number of nonzeros per row for coupling
+p_coupling = 0.05  # expected number of nonzeros per row for coupling
 
-#seed = 4
-#np.random.seed(seed)
+seed = 10
+np.random.seed(seed)
 
 
 def sprandn(m, n, p):

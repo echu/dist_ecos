@@ -10,7 +10,7 @@ block_m, block_n, block_p = 200, 60, 0.3
 
 # number of blocks
 N = 2
-p_coupling = 0.5  # expected number of nonzeros per row for coupling
+p_coupling = 0.1  # expected number of nonzeros per row for coupling
 
 #seed = 4
 #np.random.seed(seed)
@@ -63,8 +63,8 @@ def get_complementary_pair(x, l, q):
 def random_cones(m):
     """ Generates a set of random cones whose total dimension is m.
     """
-    # on average, 90% of the cones will be lp
-    l = np.random.randint(0.8 * m, m)
+    # on average, some percentage of the cones will be lp
+    l = np.random.randint(0.5 * m, m)
     remaining_dims = m - l
 
     # divide all remaining dims into SOC of size "3"

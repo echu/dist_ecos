@@ -10,21 +10,22 @@ settings.paths['mondriaan'] = "/Users/echu/src/Mondriaan4/tools/Mondriaan"
 # TODO: do the same for metis (so we can avoid pymetis)
 
 #'global' problem
-import dist_ecos.problems.svc as gp
+#import dist_ecos.problems.svc as gp
 #import random_cone_problem as gp
+import random_cone_problem_fixed_part as gp
 
 # print gp.socp_vars
 # show_spy(gp.socp_vars)
 
-runs = 1000
-N = 100
+runs = 100
+N = 3
 
 # tests[type] returns tuple with split method
 tests = {
-    'primal':        ('naive', 'general', 'primal'),
-    'intersect':     ('naive', 'general', 'intersect'),
+#    'primal':        ('naive', 'general', 'primal'),
+#    'intersect':     ('naive', 'general', 'intersect'),
     'grac_pri':       ('graclus', 'general', 'primal'),
-    'grac_int':       ('graclus', 'general', 'intersect'),
+#    'grac_int':       ('graclus', 'general', 'intersect'),
 #    'mond_pri':       ('mondriaan', 'general', 'primal'),
 #    'mond_int':       ('mondriaan', 'general', 'intersect'),
 #    'graclus':      ('graclus', 'general'),

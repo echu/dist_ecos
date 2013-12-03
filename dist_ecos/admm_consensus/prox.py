@@ -14,9 +14,6 @@ import ecos
 
 
 def add_quad_regularization(rho, c, G, h, dims, A, b):
-
-    # v is scalar var
-    # SOC is 1+1+n, n+2 big
     #
     # original problem
     # min c'*x
@@ -25,52 +22,60 @@ def add_quad_regularization(rho, c, G, h, dims, A, b):
     #      s in K
     #
     # new prob
-    # min c'*x + 1/2*quad_over_lin(diag(rho)*x - diag(rho)*x0,1)
+    # min c'*x + (1/2)||diag(rho^{1/2})*x - diag(rho^{1/2})*x0||_2^2
+    # s.t. A*x == b
+    #      G*x + s == h
+    #      s in K
+    #
+    # equiv prob
+    # min ||x - x0 + diag(1/rho)c||_2
     # s.t. A*x == b
     #      G*x + s == h
     #      s in K
     #
     # conelp form
-    # min c'*x + rho/2 * u
+    # min u
     # s.t. A*x == b
     #      G*x + s == h
-    #      -u + s1 == 1
-    #       u + s2 == 1
-    #     -2*diag(rho)*x + s3 == -2*diag(rho)*x0
+    #      -u + s1 == 0
+    #      -x + s2 == -x0 + diag(1/rho)c
     #      s in K
-    #      (s1, s2, s3) in SOC
+    #      (s1, s2) in SOC
+    #
+    # variable is (x, u)
 
     if G is not None:
         m, n = G.shape
     else:
         m, n = 0, c.shape[0]
-    c = np.hstack((c, [0.5]))
+    c = np.zeros((n+1))
+    c[n] = 1.
 
-    # remove the last sum(dim['s']) rows of G
+    # TODO: remove the last sum(dim['s']) rows of G
     if G is not None:
         G = G.tocoo()
 
-        Gi = np.hstack((G.row, range(m, m + n + 2)))
-        Gj = np.hstack((G.col, [n, n], range(n)))
-        Gv = np.hstack((G.data, [-1., 1.], -2. * rho))
+        Gi = np.hstack((G.row, range(m, m + n + 1)))
+        Gj = np.hstack((G.col, [n], range(n)))
+        Gv = np.hstack((G.data, [-1.], -np.ones((n))))
     else:
-        Gi = np.arange(m, m + n + 2)
-        Gj = np.hstack(([n, n], range(n)))
-        Gv = np.hstack(([-1., 1.], -2. * rho))
+        Gi = np.arange(m, m + n + 1)
+        Gj = np.hstack(([n], range(n)))
+        Gv = np.hstack(([-1.], -np.ones((n))))
 
-    G = sp.coo_matrix((Gv, (Gi, Gj)), shape=(m + n + 2, n + 1))
+    G = sp.coo_matrix((Gv, (Gi, Gj)), shape=(m + n + 1, n + 1))
 
-    dims['q'].append(n + 2)   # u = quad_over_lin(x - x0)
+    dims['q'].append(n + 1)   # u = norm(...)
 
     if A is not None:
         p = A.shape[0]
         A = sp.hstack((A, sp.coo_matrix(None, shape=(p, 1))))
 
     if h is not None:
-        h = np.hstack((h, np.zeros((n + 2))))
+        h = np.hstack((h, np.zeros((n + 1))))
     else:
-        h = np.zeros((n + 2))
-    h[m:m + 2] = 1.
+        h = np.zeros((n + 1))
+    
     G = G.tocsc()
     if A is not None:
         A = A.tocsc()
@@ -92,15 +97,17 @@ class Prox(object):
         else:
             self.global_index = np.arange(self.n)
 
-        private_vars = global_count[self.global_index] == 1
-        # why sqrt(rho)?
-        rho_vec = math.sqrt(rho) * np.ones((self.n))
-        rho_vec[private_vars] = 1e-3   # small regularization on private vars
+        #ECHU: private vars are regularized
+        #private_vars = global_count[self.global_index] == 1
+        #rho_vec = rho * np.ones((self.n))
+        #rho_vec[private_vars] = 1e-3   # small regularization on private vars
 
-        self.rho = rho_vec
+        self.rho = rho
+        # keep track of c offset for prox function
+        self.c_offset = socp_vars['c'] / self.rho
 
         # now, add quadratic regularization manually to the problem
-        self.socp_vars = add_quad_regularization(rho_vec, **socp_vars)
+        self.socp_vars = add_quad_regularization(rho, **socp_vars)
         self.solver = solver
 
     def prox(self, v):
@@ -109,7 +116,8 @@ class Prox(object):
         if self.n == 0:
             return np.empty(0)
 
-        self.socp_vars['h'][-self.n:] = -2 * self.rho * v
+        self.socp_vars['h'][-self.n:] = -v + self.c_offset
+        
         if self.solver == "ecos":
             sol = ecos.solve(verbose=False, **self.socp_vars)
         else:

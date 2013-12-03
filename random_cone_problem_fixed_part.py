@@ -10,7 +10,7 @@ block_m, block_n, block_p = 1800, 460, 0.01
 
 # number of blocks
 N = 2
-p_coupling = 0.05  # expected number of nonzeros per row for coupling
+p_coupling = 0.1 # expected number of nonzeros per row for coupling
 
 seed = 10
 np.random.seed(seed)

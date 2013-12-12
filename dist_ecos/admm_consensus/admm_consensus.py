@@ -56,10 +56,25 @@ def update_dual(self, z, zold):
     offset = self.x - z
     self.u += offset
 
+    # use primal and dual residuals for *cone* program
+    #subprob = self.prox_obj.subproblem
+    # computed slack vars
+    #s = self.prox_obj.s
+    
+    # z is in the cone, check b - A*z and h - G*z - s
+    #primal_term = np.linalg.norm(subprob['h'] - subprob['G'] * z - s)**2
+    #if subprob['A'] is not None:
+    #    primal_term += np.linalg.norm(subprob['b'] - subprob['A'] * z)**2
+    
     primal_term = np.linalg.norm(offset)**2
-    #in general, rho should be a vector here
+    
+    # there's no stopping condition that corresponds to dual; all i can
+    # say is that we're attempting to find a fixed point so that there exists
+    # a y which is optimal when `dual_term` is small...
+    #
+    # XXX: need to make above statement more precise.
     dual_term = np.linalg.norm(self.rho*(z - zold))**2
-
+        
     return {'primal': primal_term, 'dual': dual_term}
 
 
@@ -187,6 +202,9 @@ def solve(prox_list, local_var_list, parallel=True, max_iters=100, rho=1, restar
         zs.append(z)
         res_pri.append(pri)
         res_dual.append(dual)
+        
+        if pri < 1e-1 and dual < 1e-1:
+            break
 
     solve_time = time.time() - t
 
@@ -200,6 +218,7 @@ def solve(prox_list, local_var_list, parallel=True, max_iters=100, rho=1, restar
               'sol': z,
               'z_list': zs,
               'solve_time': solve_time,
-              'subsystem_stats': subsystem_stats}
+              'subsystem_stats': subsystem_stats,
+              'iters': i}
 
     return result

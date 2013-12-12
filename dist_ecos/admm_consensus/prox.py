@@ -88,9 +88,7 @@ class Prox(object):
     '''object to hold local data to compute prox operators of sub problems'''
 
     def __init__(self, socp_vars, global_count, global_index=None, solver='ecos', rho=1):
-        '''
-
-        rho is the admm parameter'''
+        '''rho is the admm parameter'''
         self.n = socp_vars['c'].shape[0]
         if global_index is not None:
             self.global_index = global_index
@@ -101,6 +99,15 @@ class Prox(object):
         #private_vars = global_count[self.global_index] == 1
         #rho_vec = rho * np.ones((self.n))
         #rho_vec[private_vars] = 1e-3   # small regularization on private vars
+        # self.subproblem = socp_vars
+        # self.m = self.subproblem['G'].shape[0]
+        # self.s = np.zeros((self.m))
+        # self.objval = 0
+        # self.z = np.zeros((self.m))
+        # if self.subproblem['A'] is not None:
+        #     self.y = np.zeros((self.subproblem['A'].shape[0]))
+        # else:
+        #     self.y = np.zeros((0))
 
         self.rho = rho
         # keep track of c offset for prox function
@@ -109,7 +116,7 @@ class Prox(object):
         # now, add quadratic regularization manually to the problem
         self.socp_vars = add_quad_regularization(rho, **socp_vars)
         self.solver = solver
-
+        
     def prox(self, v):
         '''computes prox_{f/rho}(v)'''
         # set the RHS of the solver
@@ -125,5 +132,9 @@ class Prox(object):
 
         x = np.array(sol['x'])
         x = np.reshape(x, (x.shape[0],))
-
+                
+        #self.z = np.array(sol['z'])[:self.m]
+        # self.objval = sol['info']['pcost']
+        # self.s = np.array(sol['s'])[:self.m]
+        
         return x[:self.n]

@@ -2,7 +2,7 @@
 """ One possibility is to fix the *probability* of connection between two
     subsystems. Another is to fix the *number* of connections each subsystem
     has. This is N * prob.
-    
+
     This files fixes the connection probability. This means that as the
     number of subsystems grows, the number of expected connections also
     grows linearly.
@@ -18,10 +18,10 @@ if __name__ == '__main__':
     parser.add_argument('-n', default = 500, type=int, dest='n', help="average block width")
     parser.add_argument('-N', default = 256, type=int, dest='N', help="number of blocks")
     parser.add_argument('-p', default = 0.1, type=float, dest='p', help="density of each block")
-    
-    
+
+
     args = parser.parse_args()
-    
+
     #problem parameters
     print "Creating problem with %d blocks, with average block size %d x %d" % (args.N, args.m, args.n)
 
@@ -32,7 +32,7 @@ if __name__ == '__main__':
 
     # number of blocks
     N = args.N
-    p_coupling = 0.001 * N #0.002 * N # expected number of nonzeros per row for coupling
+    p_coupling = 0.1 * N / block_m #0.002 * N # expected number of nonzeros per row for coupling
     # ave_conn = min(3.,N)
     # p_coupling  = (block_n * N) * (1.0 - np.exp( np.log( 1.- ave_conn / N ) / (block_m * block_n) ) )
 
@@ -244,12 +244,12 @@ if __name__ == '__main__':
     partition_list = list(partition_list.itervalues())
 
     # save everything we need into a pickled file
-    
+
     filename = "data-%dx%dx%d.p" % (block_m, block_n, N)
     print "Saving to file: %s" % filename
     import cPickle as pickle
-    data = {'socp_vars': socp_vars, 
-            'partition_list': partition_list, 
+    data = {'socp_vars': socp_vars,
+            'partition_list': partition_list,
             'N': N, 'objval': objval,
             'stats': list(statistics()),
             'block_m': block_m, 'block_n': block_n,

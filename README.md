@@ -1,3 +1,7 @@
+To run the experiments, run `./create_probs.sh` to create the problems (it uses `random_cone_problem_fixed_part.py` to create the problems from the command line). Then, call `./solve_probs.sh` which uses `test_fixed_part.py` to load the data files and solve them.
+
+===============================================================================
+
 A little more cleaned up now. Try running the examples in dist_ecos subfolder:
 
 ```python
